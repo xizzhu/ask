@@ -1,0 +1,34 @@
+language: android
+dist: trusty
+
+env:
+  global:
+    - ADB_INSTALL_TIMEOUT=10
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-29.0.2
+    - android-29
+    - sys-img-arm64-v8a-google_apis-25
+
+jdk:
+  - oraclejdk8
+
+branches:
+  only:
+    - master
+
+before_script:
+  - android list targets
+  - echo no | android create avd --force -n test -t android-25 --abi google_apis/arm64-v8a
+  - emulator -avd test -no-skin -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+
+script:
+  - ./gradlew -Pcoverage clean coveralls
+
+notifications:
+  email: false
