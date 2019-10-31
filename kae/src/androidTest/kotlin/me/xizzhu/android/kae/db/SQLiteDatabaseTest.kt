@@ -93,6 +93,23 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testTransactionWithException() {
+        assertFailsWith(RuntimeException::class) {
+            database.transaction {
+                insert(TABLE_NAME, null, ContentValues().apply {
+                    put(COLUMN_KEY, "key")
+                    put(COLUMN_VALUE, "value")
+                })
+                throw RuntimeException()
+            }
+        }
+
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
+
+    @Test
     fun testInsert() {
         assertNotEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key1", COLUMN_VALUE to "value1"))
         assertNotEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key2", COLUMN_VALUE to "value2"))
