@@ -20,6 +20,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.test.runBlockingTest
 import me.xizzhu.android.kae.tests.BaseUnitTest
 import org.junit.Assert.assertArrayEquals
 import kotlin.test.*
@@ -66,6 +68,14 @@ class CursorTest : BaseUnitTest() {
 
     @Test
     fun testAsSequence() {
+        prepareDatabase()
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(2, it.count)
+            it.asSequence().forEachIndexed { index, row -> assertEquals(index, row) }
+        }
+    }
+
+    private fun prepareDatabase() {
         database.insert(TABLE_NAME,
                 COLUMN_BLOB to byteArrayOf(1, 2, 3),
                 COLUMN_FLOAT to 4.56,
@@ -76,29 +86,34 @@ class CursorTest : BaseUnitTest() {
                 COLUMN_FLOAT to null,
                 COLUMN_INTEGER to null,
                 COLUMN_STRING to null)
+    }
 
+    private fun assertEquals(index: Int, row: Map<String, Any?>) {
+        when (index) {
+            0 -> {
+                assertEquals(4, row.count())
+                assertArrayEquals(byteArrayOf(1, 2, 3), row[COLUMN_BLOB] as ByteArray)
+                assertEquals(4.56, row[COLUMN_FLOAT])
+                assertEquals(789L, row[COLUMN_INTEGER])
+                assertEquals("string", row[COLUMN_STRING])
+            }
+            1 -> {
+                assertEquals(4, row.count())
+                assertNull(row[COLUMN_BLOB])
+                assertNull(row[COLUMN_FLOAT])
+                assertNull(row[COLUMN_INTEGER])
+                assertNull(row[COLUMN_STRING])
+            }
+            else -> fail()
+        }
+    }
+
+    @Test
+    fun testAsFlow() = testDispatcher.runBlockingTest {
+        prepareDatabase()
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)
-
-            it.asSequence().forEachIndexed { index, row ->
-                when (index) {
-                    0 -> {
-                        assertEquals(4, row.count())
-                        assertArrayEquals(byteArrayOf(1, 2, 3), row[COLUMN_BLOB] as ByteArray)
-                        assertEquals(4.56, row[COLUMN_FLOAT])
-                        assertEquals(789L, row[COLUMN_INTEGER])
-                        assertEquals("string", row[COLUMN_STRING])
-                    }
-                    1 -> {
-                        assertEquals(4, row.count())
-                        assertNull(row[COLUMN_BLOB])
-                        assertNull(row[COLUMN_FLOAT])
-                        assertNull(row[COLUMN_INTEGER])
-                        assertNull(row[COLUMN_STRING])
-                    }
-                    else -> fail()
-                }
-            }
+            it.asFlow().collectIndexed { index, row -> assertEquals(index, row) }
         }
     }
 }
