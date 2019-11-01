@@ -67,11 +67,11 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
-    fun testAsSequence() {
+    fun testAsIterable() {
         prepareDatabase()
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        queryAll().use {
             assertEquals(2, it.count)
-            it.asSequence().forEachIndexed { index, row -> assertEquals(index, row) }
+            it.asIterable().forEachIndexed { index, row -> assertEquals(index, row) }
         }
     }
 
@@ -87,6 +87,8 @@ class CursorTest : BaseUnitTest() {
                 COLUMN_INTEGER to null,
                 COLUMN_STRING to null)
     }
+
+    fun queryAll() = database.rawQuery("SELECT * from $TABLE_NAME;", null)
 
     private fun assertEquals(index: Int, row: Map<String, Any?>) {
         when (index) {
@@ -109,9 +111,18 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
+    fun testAsSequence() {
+        prepareDatabase()
+        queryAll().use {
+            assertEquals(2, it.count)
+            it.asSequence().forEachIndexed { index, row -> assertEquals(index, row) }
+        }
+    }
+
+    @Test
     fun testAsFlow() = testDispatcher.runBlockingTest {
         prepareDatabase()
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        queryAll().use {
             assertEquals(2, it.count)
             it.asFlow().collectIndexed { index, row -> assertEquals(index, row) }
         }

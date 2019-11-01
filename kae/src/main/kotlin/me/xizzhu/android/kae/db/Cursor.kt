@@ -21,6 +21,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 /**
+ * Create a [Iterable] that returns all the data from the [Cursor].
+ *
+ * Each element in the iterator represents one row from the cursor as a [Map]. The key is the column
+ * name, and the value is the value of the column.
+ */
+fun Cursor.asIterable(): Iterable<Map<String, Any?>> = Iterable {
+    object : Iterator<Map<String, Any?>> {
+        override fun hasNext(): Boolean = position < count - 1
+
+        override fun next(): Map<String, Any?> {
+            moveToNext()
+            return getRow()
+        }
+    }
+}
+
+/**
  * Create a [Sequence] that returns all the data from the [Cursor].
  *
  * Each element in the sequence represents one row from the cursor as a [Map]. The key is the column
