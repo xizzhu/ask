@@ -23,11 +23,20 @@ class TransactionAbortedException : RuntimeException()
 
 /**
  * @return True if the [table] exists, or false otherwise.
- * */
+ */
 fun SQLiteDatabase.hasTable(table: String): Boolean =
         rawQuery("SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name = '$table';", null).use {
             it.count > 0
         }
+
+/**
+ * Remove the [table].
+ *
+ * @param ifExists If true, suppress the error in case the [table] does not exist.
+ */
+fun SQLiteDatabase.dropTable(table: String, ifExists: Boolean = true) {
+    execSQL("DROP TABLE ${if (ifExists) "IF EXISTS" else ""} $table;")
+}
 
 /**
  * Run [block] in a transaction. To abort the transaction, simply throw a [TransactionAbortedException].

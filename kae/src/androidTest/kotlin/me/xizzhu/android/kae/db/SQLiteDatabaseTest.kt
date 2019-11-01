@@ -67,6 +67,19 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testDropTable() {
+        assertTrue(database.hasTable(TABLE_NAME))
+        database.dropTable(TABLE_NAME)
+        assertFalse(database.hasTable(TABLE_NAME))
+    }
+
+    @Test
+    fun testDropNonExistTable() {
+        database.dropTable("nonExist")
+        assertFailsWith(SQLiteException::class) { database.dropTable("nonExist", false) }
+    }
+
+    @Test
     fun testTransaction() {
         database.transaction {
             insert(TABLE_NAME, null, ContentValues()
