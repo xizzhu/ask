@@ -35,7 +35,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     private class DatabaseOpenHelper : SQLiteOpenHelper(ApplicationProvider.getApplicationContext(), DB_NAME, null, 1) {
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL("CREATE TABLE $TABLE_NAME($COLUMN_KEY TEXT UNIQUE, $COLUMN_VALUE TEXT)")
+            db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_KEY TEXT UNIQUE, $COLUMN_VALUE TEXT)")
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
