@@ -22,6 +22,14 @@ import me.xizzhu.android.kae.content.contentValuesOf
 class TransactionAbortedException : RuntimeException()
 
 /**
+ * @return True if the [table] exists, or false otherwise.
+ * */
+fun SQLiteDatabase.hasTable(table: String): Boolean =
+        rawQuery("SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name = '$table';", null).use {
+            it.count > 0
+        }
+
+/**
  * Run [block] in a transaction. To abort the transaction, simply throw a [TransactionAbortedException].
  *
  * Due to limitation that transactions are thread confined, SQLite accessing code inside the [block]
