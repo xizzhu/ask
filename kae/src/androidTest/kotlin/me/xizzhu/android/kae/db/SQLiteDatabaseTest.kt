@@ -20,6 +20,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
 import me.xizzhu.android.kae.tests.BaseUnitTest
@@ -57,6 +58,25 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.close()
         ApplicationProvider.getApplicationContext<Context>().deleteDatabase(DB_NAME)
         super.tearDown()
+    }
+
+    @Test
+    fun testHasTable() {
+        assertTrue(database.hasTable(TABLE_NAME))
+        assertFalse(database.hasTable("nonExist"))
+    }
+
+    @Test
+    fun testDropTable() {
+        assertTrue(database.hasTable(TABLE_NAME))
+        database.dropTable(TABLE_NAME)
+        assertFalse(database.hasTable(TABLE_NAME))
+    }
+
+    @Test
+    fun testDropNonExistTable() {
+        database.dropTable("nonExist")
+        assertFailsWith(SQLiteException::class) { database.dropTable("nonExist", false) }
     }
 
     @Test
