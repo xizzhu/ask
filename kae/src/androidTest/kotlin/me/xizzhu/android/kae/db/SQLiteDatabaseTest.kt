@@ -67,6 +67,91 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testCreateTable() {
+        database.createTable("tableName") {
+            it["column1"] = INTEGER + PRIMARY_KEY
+            it["column2"] = TEXT + NOT_NULL
+            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
+        }
+
+        database.insertOrThrow("tableName") {
+            it["column1"] = 1
+            it["column2"] = "text"
+            it["column3"] = 3
+        }
+        database.rawQuery("SELECT * from tableName;", null).use {
+            assertEquals(1, it.count)
+
+            with(it.asSequence().first()) {
+                assertEquals(1L, get("column1"))
+                assertEquals("text", get("column2"))
+                assertEquals(3L, get("column3"))
+            }
+        }
+
+        assertFailsWith(SQLiteException::class) {
+            // duplicated primary key
+            database.insertOrThrow("tableName") {
+                it["column1"] = 1
+                it["column2"] = ""
+                it["column3"] = 100
+            }
+        }
+        assertEquals(1, database.rawQuery("SELECT * from tableName;", null).use { it.count })
+
+        // break uniqueness
+        database.insertOrThrow("tableName") {
+            it["column1"] = 2
+            it["column2"] = "updated"
+            it["column3"] = 3
+        }
+        database.rawQuery("SELECT * from tableName;", null).use {
+            assertEquals(1, it.count)
+
+            with(it.asSequence().first()) {
+                assertEquals(2L, get("column1"))
+                assertEquals("updated", get("column2"))
+                assertEquals(3L, get("column3"))
+            }
+        }
+
+        // normal insertion
+        database.insertOrThrow("tableName") {
+            it["column1"] = 4
+            it["column2"] = "4"
+            it["column3"] = 4
+        }
+        database.rawQuery("SELECT * from tableName;", null).use {
+            assertEquals(2, it.count)
+
+            with(it.asSequence().toList()) {
+                assertEquals(2L, get(0).get("column1"))
+                assertEquals("updated", get(0).get("column2"))
+                assertEquals(3L, get(0).get("column3"))
+
+                assertEquals(4L, get(1).get("column1"))
+                assertEquals("4", get(1).get("column2"))
+                assertEquals(4L, get(1).get("column3"))
+            }
+        }
+    }
+
+    @Test
+    fun testCreateExistingTable() {
+        database.createTable(TABLE_NAME) {
+            it[COLUMN_KEY] = TEXT
+            it[COLUMN_VALUE] = TEXT
+        }
+
+        assertFailsWith(SQLiteException::class) {
+            database.createTable(TABLE_NAME, false) {
+                it[COLUMN_KEY] = TEXT
+                it[COLUMN_VALUE] = TEXT
+            }
+        }
+    }
+
+    @Test
     fun testDropTable() {
         assertTrue(database.hasTable(TABLE_NAME))
         database.dropTable(TABLE_NAME)

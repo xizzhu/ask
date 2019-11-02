@@ -30,6 +30,27 @@ fun SQLiteDatabase.hasTable(table: String): Boolean =
         }
 
 /**
+ * Create a [table] with columns described in [block].
+ *
+ * @param ifNotExists If true, suppress the error in case the [table] already exists.
+ */
+fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifier>) -> Unit) {
+    val sqlBuilder = StringBuilder("CREATE TABLE")
+    if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
+    sqlBuilder.append(' ').append(table)
+
+    sqlBuilder.append(" (")
+    val columnDefinitions = hashMapOf<String, ColumnModifier>().apply(block)
+    columnDefinitions.forEach { (key, value) ->
+        sqlBuilder.append(key).append(' ').append(value.text).append(", ")
+    }
+    if (columnDefinitions.size > 0) sqlBuilder.setLength(sqlBuilder.length - 2)
+    sqlBuilder.append(");")
+
+    execSQL(sqlBuilder.toString())
+}
+
+/**
  * Remove the [table].
  *
  * @param ifExists If true, suppress the error in case the [table] does not exist.
@@ -65,7 +86,7 @@ inline fun SQLiteDatabase.transaction(exclusive: Boolean = true, block: SQLiteDa
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
+        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
 
 /**
  * Insert values provided through [block] as a row into the [table].
@@ -74,7 +95,7 @@ inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, 
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
+        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
 
 /**
  * Insert values provided through [block] as a row into the [table], using [conflictAlgorithm] to resolve conflicts.
@@ -83,4 +104,4 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues(), conflictAlgorithm)
+        insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)

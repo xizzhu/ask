@@ -90,7 +90,7 @@ class CursorTest : BaseUnitTest() {
         }
     }
 
-    fun queryAll() = database.rawQuery("SELECT * from $TABLE_NAME;", null)
+    private fun queryAll() = database.rawQuery("SELECT * from $TABLE_NAME;", null)
 
     private fun assertEquals(index: Int, row: Map<String, Any?>) {
         when (index) {
