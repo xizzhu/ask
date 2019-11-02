@@ -24,8 +24,8 @@ import kotlin.test.assertNull
 
 class ContentValuesTest : BaseUnitTest() {
     @Test
-    fun testContentValues() {
-        val actual = contentValuesOf(
+    fun testToContentValues() {
+        val actual = mapOf(
                 "null" to null,
                 "boolean" to false,
                 "byte" to 123.toByte(),
@@ -36,7 +36,7 @@ class ContentValuesTest : BaseUnitTest() {
                 "long" to 2345678L,
                 "short" to 9012.toShort(),
                 "string" to "string"
-        )
+        ).toContentValues()
         assertEquals(10, actual.size())
         assertNull(actual.get("null"))
         assertEquals(false, actual.get("boolean"))
@@ -52,6 +52,6 @@ class ContentValuesTest : BaseUnitTest() {
 
     @Test(expected = IllegalArgumentException::class)
     fun testUnsupportedValueType() {
-        contentValuesOf("key" to Unit)
+        mapOf("key" to Unit).toContentValues()
     }
 }
