@@ -131,10 +131,22 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testInsert() {
-        assertNotEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key1", COLUMN_VALUE to "value1"))
-        assertNotEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key2", COLUMN_VALUE to "value2"))
-        assertEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key1", COLUMN_VALUE to "value"))
-        assertEquals(-1L, database.insert(TABLE_NAME, COLUMN_KEY to "key2", COLUMN_VALUE to "value"))
+        assertNotEquals(-1L, database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1"
+        })
+        assertNotEquals(-1L, database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2"
+        })
+        assertEquals(-1L, database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value"
+        })
+        assertEquals(-1L, database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value"
+        })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)
@@ -151,11 +163,27 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testInsertOrThrow() {
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME, COLUMN_KEY to "key1", COLUMN_VALUE to "value1"))
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME, COLUMN_KEY to "key2", COLUMN_VALUE to "value2"))
+        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1"
+        })
+        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2"
+        })
 
-        assertFailsWith(SQLException::class) { database.insertOrThrow(TABLE_NAME, COLUMN_KEY to "key1", COLUMN_VALUE to "value") }
-        assertFailsWith(SQLException::class) { database.insertOrThrow(TABLE_NAME, COLUMN_KEY to "key2", COLUMN_VALUE to "value") }
+        assertFailsWith(SQLException::class) {
+            database.insertOrThrow(TABLE_NAME) {
+                it[COLUMN_KEY] = "key1"
+                it[COLUMN_VALUE] = "value"
+            }
+        }
+        assertFailsWith(SQLException::class) {
+            database.insertOrThrow(TABLE_NAME) {
+                it[COLUMN_KEY] = "key2"
+                it[COLUMN_VALUE] = "value"
+            }
+        }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)
@@ -172,14 +200,36 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testInsertWithOnConflict() {
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE, COLUMN_KEY to "key1", COLUMN_VALUE to "value1"))
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE, COLUMN_KEY to "key2", COLUMN_VALUE to "value2"))
+        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1"
+        })
+        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2"
+        })
 
-        assertFailsWith(SQLException::class) { database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE, COLUMN_KEY to "key1", COLUMN_VALUE to "value") }
-        assertFailsWith(SQLException::class) { database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE, COLUMN_KEY to "key2", COLUMN_VALUE to "value") }
+        assertFailsWith(SQLException::class) {
+            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+                it[COLUMN_KEY] = "key1"
+                it[COLUMN_VALUE] = "value"
+            }
+        }
+        assertFailsWith(SQLException::class) {
+            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+                it[COLUMN_KEY] = "key2"
+                it[COLUMN_VALUE] = "value"
+            }
+        }
 
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, COLUMN_KEY to "key1", COLUMN_VALUE to "value1_updated"))
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE, COLUMN_KEY to "key2", COLUMN_VALUE to "value2_updated"))
+        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1_updated"
+        })
+        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2_updated"
+        })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)

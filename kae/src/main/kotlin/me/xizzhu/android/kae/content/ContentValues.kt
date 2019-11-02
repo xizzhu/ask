@@ -19,12 +19,12 @@ package me.xizzhu.android.kae.content
 import android.content.ContentValues
 
 /**
- * Create a new [ContentValues] with the given pairs as values.
+ * Create a new [ContentValues] using values from the [Map].
  *
  * @throws IllegalArgumentException When the type of a value is not allowed in [ContentValues].
  */
-fun contentValuesOf(vararg pairs: Pair<String, Any?>): ContentValues = ContentValues(pairs.size).apply {
-    pairs.forEach { (key, value) ->
+fun Map<String, Any?>.toContentValues(): ContentValues = ContentValues(size).apply {
+    forEach { (key, value) ->
         when (value) {
             null -> putNull(key)
             is Boolean -> put(key, value)

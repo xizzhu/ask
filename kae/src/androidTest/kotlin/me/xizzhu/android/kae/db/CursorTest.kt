@@ -76,16 +76,18 @@ class CursorTest : BaseUnitTest() {
     }
 
     private fun prepareDatabase() {
-        database.insert(TABLE_NAME,
-                COLUMN_BLOB to byteArrayOf(1, 2, 3),
-                COLUMN_FLOAT to 4.56,
-                COLUMN_INTEGER to 789L,
-                COLUMN_STRING to "string")
-        database.insert(TABLE_NAME,
-                COLUMN_BLOB to null,
-                COLUMN_FLOAT to null,
-                COLUMN_INTEGER to null,
-                COLUMN_STRING to null)
+        database.insert(TABLE_NAME) {
+            it[COLUMN_BLOB] = byteArrayOf(1, 2, 3)
+            it[COLUMN_FLOAT] = 4.56
+            it[COLUMN_INTEGER] = 789L
+            it[COLUMN_STRING] = "string"
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_BLOB] = null
+            it[COLUMN_FLOAT] = null
+            it[COLUMN_INTEGER] = null
+            it[COLUMN_STRING] = null
+        }
     }
 
     fun queryAll() = database.rawQuery("SELECT * from $TABLE_NAME;", null)

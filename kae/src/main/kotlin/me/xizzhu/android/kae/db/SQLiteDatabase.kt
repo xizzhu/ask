@@ -17,7 +17,7 @@
 package me.xizzhu.android.kae.db
 
 import android.database.sqlite.SQLiteDatabase
-import me.xizzhu.android.kae.content.contentValuesOf
+import me.xizzhu.android.kae.content.toContentValues
 
 class TransactionAbortedException : RuntimeException()
 
@@ -60,27 +60,27 @@ inline fun SQLiteDatabase.transaction(exclusive: Boolean = true, block: SQLiteDa
 }
 
 /**
- * Insert [values] as a row into the [table].
+ * Insert values provided through [block] as a row into the [table].
  *
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
-fun SQLiteDatabase.insert(table: String, vararg values: Pair<String, Any?>, nullColumnHack: String? = null): Long =
-        insert(table, nullColumnHack, contentValuesOf(*values))
+inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
+        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
 
 /**
- * Insert [values] as a row into the [table].
+ * Insert values provided through [block] as a row into the [table].
  *
  * @throws SQLException
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
-fun SQLiteDatabase.insertOrThrow(table: String, vararg values: Pair<String, Any?>, nullColumnHack: String? = null): Long =
-        insertOrThrow(table, nullColumnHack, contentValuesOf(*values))
+inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
+        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
 
 /**
- * Insert [values] as a row into the [table], using [conflictAlgorithm] to resolve conflicts.
+ * Insert values provided through [block] as a row into the [table], using [conflictAlgorithm] to resolve conflicts.
  *
  * @throws SQLException
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
-fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, vararg values: Pair<String, Any?>, nullColumnHack: String? = null): Long =
-        insertWithOnConflict(table, nullColumnHack, contentValuesOf(*values), conflictAlgorithm)
+inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
+        insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues(), conflictAlgorithm)
