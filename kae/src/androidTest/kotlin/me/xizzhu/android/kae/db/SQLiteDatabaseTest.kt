@@ -24,6 +24,8 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
 import me.xizzhu.android.kae.tests.BaseUnitTest
+import me.xizzhu.android.kae.tests.assertListEquals
+import me.xizzhu.android.kae.tests.assertMapEquals
 import kotlin.test.*
 
 class SQLiteDatabaseTest : BaseUnitTest() {
@@ -81,12 +83,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         }
         database.rawQuery("SELECT * from tableName;", null).use {
             assertEquals(1, it.count)
-
-            with(it.asSequence().first()) {
-                assertEquals(1L, get("column1"))
-                assertEquals("text", get("column2"))
-                assertEquals(3L, get("column3"))
-            }
+            assertMapEquals(mapOf("column1" to 1L, "column2" to "text", "column3" to 3L), it.asSequence().first())
         }
 
         assertFailsWith(SQLiteException::class) {
@@ -106,13 +103,10 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             it["column3"] = 3
         }
         database.rawQuery("SELECT * from tableName;", null).use {
-            assertEquals(1, it.count)
-
-            with(it.asSequence().first()) {
-                assertEquals(2L, get("column1"))
-                assertEquals("updated", get("column2"))
-                assertEquals(3L, get("column3"))
-            }
+            assertListEquals(
+                    listOf(mapOf("column1" to 2L, "column2" to "updated", "column3" to 3L)),
+                    it.asSequence().toList()
+            )
         }
 
         // normal insertion
@@ -122,17 +116,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             it["column3"] = 4
         }
         database.rawQuery("SELECT * from tableName;", null).use {
-            assertEquals(2, it.count)
-
-            with(it.asSequence().toList()) {
-                assertEquals(2L, get(0).get("column1"))
-                assertEquals("updated", get(0).get("column2"))
-                assertEquals(3L, get(0).get("column3"))
-
-                assertEquals(4L, get(1).get("column1"))
-                assertEquals("4", get(1).get("column2"))
-                assertEquals(4L, get(1).get("column3"))
-            }
+            assertListEquals(
+                    listOf(
+                            mapOf("column1" to 2L, "column2" to "updated", "column3" to 3L),
+                            mapOf("column1" to 4L, "column2" to "4", "column3" to 4L)
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 
@@ -167,28 +157,27 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     @Test
     fun testTransaction() {
         database.transaction {
-            insert(TABLE_NAME, null, ContentValues()
-                    .apply {
-                        put(COLUMN_KEY, "key")
-                        put(COLUMN_VALUE, "value")
-                    })
+            insert(TABLE_NAME) {
+                it[COLUMN_KEY] = "key"
+                it[COLUMN_VALUE] = "value"
+            }
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(1, it.count)
-            assertTrue(it.moveToNext())
-            assertEquals("key", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to "value")),
+                    it.asSequence().toList()
+            )
         }
     }
 
     @Test
     fun testAbortTransaction() {
         database.transaction {
-            insert(TABLE_NAME, null, ContentValues().apply {
-                put(COLUMN_KEY, "key")
-                put(COLUMN_VALUE, "value")
-            })
+            insert(TABLE_NAME) {
+                it[COLUMN_KEY] = "key"
+                it[COLUMN_VALUE] = "value"
+            }
             throw TransactionAbortedException()
         }
 
@@ -234,15 +223,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 
@@ -271,15 +258,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 
@@ -317,15 +302,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1_updated", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2_updated", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1_updated"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2_updated")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 }
