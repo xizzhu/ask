@@ -22,7 +22,7 @@ import kotlin.test.assertEquals
 
 class TypesTest : BaseUnitTest() {
     @Test
-    fun testColumnModifier() {
+    fun testColumnModifiers() {
         assertEquals("BLOB PRIMARY KEY", (BLOB + PRIMARY_KEY).text)
         assertEquals("INTEGER PRIMARY KEY ON CONFLICT FAIL", (INTEGER + PRIMARY_KEY(ConflictClause.FAIL)).text)
         assertEquals("REAL NOT NULL", (REAL + NOT_NULL).text)

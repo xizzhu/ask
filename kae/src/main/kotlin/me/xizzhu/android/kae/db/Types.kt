@@ -24,16 +24,24 @@ enum class ConflictClause(val text: String) {
     ROLLBACK("ON CONFLICT ROLLBACK")
 }
 
-class ColumnModifier(val text: String) {
-    operator fun plus(other: ColumnModifier): ColumnModifier {
-        return ColumnModifier("$text ${other.text}")
+class ColumnModifier(val text: String)
+
+class ColumnModifiers(val modifiers: List<ColumnModifier>) {
+    val text: String by lazy {
+        StringBuilder().apply {
+            modifiers.forEach { modifier ->
+                if (isNotEmpty()) append(' ')
+                append(modifier.text)
+            }
+        }.toString()
+    }
+
+    constructor(modifier: ColumnModifier) : this(listOf(modifier))
+
+    operator fun plus(modifier: ColumnModifier): ColumnModifiers {
+        return ColumnModifiers(ArrayList<ColumnModifier>(modifiers).apply { add(modifier) })
     }
 }
-
-val BLOB = ColumnModifier("BLOB")
-val INTEGER = ColumnModifier("INTEGER")
-val REAL = ColumnModifier("REAL")
-val TEXT = ColumnModifier("TEXT")
 
 val PRIMARY_KEY = ColumnModifier("PRIMARY KEY")
 fun PRIMARY_KEY(conflictClause: ConflictClause) = ColumnModifier("PRIMARY KEY ${conflictClause.text}")
@@ -43,3 +51,8 @@ fun NOT_NULL(conflictClause: ConflictClause) = ColumnModifier("NOT NULL ${confli
 
 val UNIQUE = ColumnModifier("UNIQUE")
 fun UNIQUE(conflictClause: ConflictClause) = ColumnModifier("UNIQUE ${conflictClause.text}")
+
+val BLOB = ColumnModifiers(ColumnModifier("BLOB"))
+val INTEGER = ColumnModifiers(ColumnModifier("INTEGER"))
+val REAL = ColumnModifiers(ColumnModifier("REAL"))
+val TEXT = ColumnModifiers(ColumnModifier("TEXT"))

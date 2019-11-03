@@ -70,13 +70,19 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     @Test
     fun testCreateTable() {
         assertEquals(
-                "CREATE TABLE IF NOT EXISTS tableName (column1 INTEGER PRIMARY KEY, column2 TEXT NOT NULL, column3 INTEGER UNIQUE ON CONFLICT REPLACE);",
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER PRIMARY KEY, " +
+                        "column2 TEXT NOT NULL, " +
+                        "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                        "column4 REAL" +
+                        ");",
                 buildSqlForCreatingTable(
                         "tableName", true,
                         mapOf(
                                 "column1" to INTEGER + PRIMARY_KEY,
                                 "column2" to TEXT + NOT_NULL,
-                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE)
+                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                                "column4" to REAL
                         )
                 )
         )

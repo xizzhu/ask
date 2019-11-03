@@ -34,11 +34,11 @@ fun SQLiteDatabase.hasTable(table: String): Boolean =
  *
  * @param ifNotExists If true, suppress the error in case the [table] already exists.
  */
-fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifier>) -> Unit) {
-    execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifier>().apply(block)))
+fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
+    execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
 }
 
-internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifier>): String {
+internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
     val sqlBuilder = StringBuilder("CREATE TABLE")
     if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
     sqlBuilder.append(' ').append(table)
