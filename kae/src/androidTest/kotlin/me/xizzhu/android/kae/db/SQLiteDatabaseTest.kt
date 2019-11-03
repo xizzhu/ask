@@ -71,10 +71,11 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testCreateTable() {
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
-                        "column1 INTEGER PRIMARY KEY, " +
+                        "column1 INTEGER, " +
                         "column2 TEXT NOT NULL, " +
                         "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
-                        "column4 REAL" +
+                        "column4 REAL, " +
+                        "PRIMARY KEY(column1)" +
                         ");",
                 buildSqlForCreatingTable(
                         "tableName", true,
@@ -83,6 +84,28 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                                 "column2" to TEXT + NOT_NULL,
                                 "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
                                 "column4" to REAL
+                        )
+                )
+        )
+    }
+
+    @Test
+    fun testCreateTableWithMultiColumnPrimaryKey() {
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER, " +
+                        "column2 INTEGER, " +
+                        "column3 INTEGER, " +
+                        "column4 TEXT, " +
+                        "PRIMARY KEY(column1, column2)" +
+                        ");",
+                buildSqlForCreatingTable(
+                        "tableName", true,
+                        mapOf(
+                                "column1" to INTEGER + PRIMARY_KEY,
+                                "column2" to INTEGER + PRIMARY_KEY,
+                                "column3" to INTEGER,
+                                "column4" to TEXT
                         )
                 )
         )

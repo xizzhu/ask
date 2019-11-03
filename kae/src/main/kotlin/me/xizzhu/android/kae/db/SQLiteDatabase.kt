@@ -44,10 +44,33 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
     sqlBuilder.append(' ').append(table)
 
     sqlBuilder.append(" (")
-    columnDefinitions.forEach { (key, value) ->
-        sqlBuilder.append(key).append(' ').append(value.text).append(", ")
+
+    val primaryKeys = arrayListOf<String>()
+    columnDefinitions.forEach { (columnName, modifiers) ->
+        var hasPrimaryKey = false
+        for (modifier in modifiers.modifiers) {
+            if (PRIMARY_KEY == modifier) {
+                hasPrimaryKey = true
+                primaryKeys.add(columnName)
+                break
+            }
+        }
+
+        sqlBuilder.append(columnName)
+                .append(' ')
+                .append(if (hasPrimaryKey) (modifiers - PRIMARY_KEY).text else modifiers.text)
+                .append(", ")
     }
-    if (columnDefinitions.isNotEmpty()) sqlBuilder.setLength(sqlBuilder.length - 2)
+    if (primaryKeys.isNotEmpty()) {
+        sqlBuilder.append("PRIMARY KEY(")
+        primaryKeys.forEachIndexed { index, primaryKey ->
+            if (index > 0) sqlBuilder.append(", ")
+            sqlBuilder.append(primaryKey)
+        }
+        sqlBuilder.append(')')
+    }
+    if (columnDefinitions.isNotEmpty() && primaryKeys.isEmpty()) sqlBuilder.setLength(sqlBuilder.length - 2)
+
     sqlBuilder.append(");")
 
     return sqlBuilder.toString()

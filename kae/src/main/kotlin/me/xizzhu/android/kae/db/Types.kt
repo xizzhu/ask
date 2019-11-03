@@ -41,6 +41,10 @@ class ColumnModifiers(val modifiers: List<ColumnModifier>) {
     operator fun plus(modifier: ColumnModifier): ColumnModifiers {
         return ColumnModifiers(ArrayList<ColumnModifier>(modifiers).apply { add(modifier) })
     }
+
+    operator fun minus(modifier: ColumnModifier): ColumnModifiers {
+        return ColumnModifiers(ArrayList<ColumnModifier>(modifiers).apply { remove(modifier) })
+    }
 }
 
 val PRIMARY_KEY = ColumnModifier("PRIMARY KEY")
