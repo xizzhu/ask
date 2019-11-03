@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
 import me.xizzhu.android.kae.tests.BaseUnitTest
 import me.xizzhu.android.kae.tests.assertListEquals
-import me.xizzhu.android.kae.tests.assertMapEquals
 import kotlin.test.*
 
 class SQLiteDatabaseTest : BaseUnitTest() {
@@ -70,60 +69,17 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testCreateTable() {
-        database.createTable("tableName") {
-            it["column1"] = INTEGER + PRIMARY_KEY
-            it["column2"] = TEXT + NOT_NULL
-            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
-        }
-
-        database.insertOrThrow("tableName") {
-            it["column1"] = 1
-            it["column2"] = "text"
-            it["column3"] = 3
-        }
-        database.rawQuery("SELECT * from tableName;", null).use {
-            assertEquals(1, it.count)
-            assertMapEquals(mapOf("column1" to 1L, "column2" to "text", "column3" to 3L), it.asSequence().first())
-        }
-
-        assertFailsWith(SQLiteException::class) {
-            // duplicated primary key
-            database.insertOrThrow("tableName") {
-                it["column1"] = 1
-                it["column2"] = ""
-                it["column3"] = 100
-            }
-        }
-        assertEquals(1, database.rawQuery("SELECT * from tableName;", null).use { it.count })
-
-        // break uniqueness
-        database.insertOrThrow("tableName") {
-            it["column1"] = 2
-            it["column2"] = "updated"
-            it["column3"] = 3
-        }
-        database.rawQuery("SELECT * from tableName;", null).use {
-            assertListEquals(
-                    listOf(mapOf("column1" to 2L, "column2" to "updated", "column3" to 3L)),
-                    it.asSequence().toList()
-            )
-        }
-
-        // normal insertion
-        database.insertOrThrow("tableName") {
-            it["column1"] = 4
-            it["column2"] = "4"
-            it["column3"] = 4
-        }
-        database.rawQuery("SELECT * from tableName;", null).use {
-            assertListEquals(
-                    listOf(
-                            mapOf("column1" to 2L, "column2" to "updated", "column3" to 3L),
-                            mapOf("column1" to 4L, "column2" to "4", "column3" to 4L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (column1 INTEGER PRIMARY KEY, column2 TEXT NOT NULL, column3 INTEGER UNIQUE ON CONFLICT REPLACE);",
+                buildSqlForCreatingTable(
+                        "tableName", true,
+                        mapOf(
+                                "column1" to INTEGER + PRIMARY_KEY,
+                                "column2" to TEXT + NOT_NULL,
+                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE)
+                        )
+                )
+        )
     }
 
     @Test
