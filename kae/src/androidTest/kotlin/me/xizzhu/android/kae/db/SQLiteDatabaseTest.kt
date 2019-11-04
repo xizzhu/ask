@@ -87,6 +87,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         )
                 )
         )
+
+        database.createTable("tableName") {
+            it["column1"] = INTEGER + PRIMARY_KEY
+            it["column2"] = TEXT + NOT_NULL
+            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
+            it["column4"] = REAL
+        }
     }
 
     @Test
@@ -109,6 +116,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         )
                 )
         )
+
+        database.createTable("tableName") {
+            it["column1"] = INTEGER + PRIMARY_KEY
+            it["column2"] = INTEGER + PRIMARY_KEY
+            it["column3"] = INTEGER
+            it["column4"] = TEXT
+        }
     }
 
     @Test
