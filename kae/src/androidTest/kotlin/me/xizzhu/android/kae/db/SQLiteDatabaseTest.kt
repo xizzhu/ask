@@ -97,6 +97,35 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testCreateTableWithConflictClause() {
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER, " +
+                        "column2 TEXT NOT NULL, " +
+                        "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                        "column4 REAL, " +
+                        "PRIMARY KEY(column1) ON CONFLICT ABORT" +
+                        ");",
+                buildSqlForCreatingTable(
+                        "tableName", true,
+                        mapOf(
+                                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ABORT),
+                                "column2" to TEXT + NOT_NULL,
+                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                                "column4" to REAL
+                        )
+                )
+        )
+
+        database.createTable("tableName") {
+            it["column1"] = INTEGER + PRIMARY_KEY(ConflictClause.ABORT)
+            it["column2"] = TEXT + NOT_NULL
+            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
+            it["column4"] = REAL
+        }
+    }
+
+    @Test
     fun testCreateTableWithMultiColumnPrimaryKey() {
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
@@ -104,12 +133,12 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column2 INTEGER, " +
                         "column3 INTEGER, " +
                         "column4 TEXT, " +
-                        "PRIMARY KEY(column1, column2)" +
+                        "PRIMARY KEY(column1, column2) ON CONFLICT ROLLBACK" +
                         ");",
                 buildSqlForCreatingTable(
                         "tableName", true,
                         mapOf(
-                                "column1" to INTEGER + PRIMARY_KEY,
+                                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK),
                                 "column2" to INTEGER + PRIMARY_KEY,
                                 "column3" to INTEGER,
                                 "column4" to TEXT
@@ -118,7 +147,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         )
 
         database.createTable("tableName") {
-            it["column1"] = INTEGER + PRIMARY_KEY
+            it["column1"] = INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK)
             it["column2"] = INTEGER + PRIMARY_KEY
             it["column3"] = INTEGER
             it["column4"] = TEXT

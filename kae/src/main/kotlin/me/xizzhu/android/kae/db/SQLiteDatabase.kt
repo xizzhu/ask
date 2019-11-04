@@ -46,19 +46,21 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
     sqlBuilder.append(" (")
 
     val primaryKeys = arrayListOf<String>()
+    var primaryKeyConflictClause: ConflictClause? = null
     columnDefinitions.forEach { (columnName, modifiers) ->
-        var hasPrimaryKey = false
+        var primaryKey: PrimaryKey? = null
         for (modifier in modifiers.modifiers) {
-            if (PRIMARY_KEY == modifier) {
-                hasPrimaryKey = true
+            if (modifier is PrimaryKey) {
+                primaryKey = modifier
                 primaryKeys.add(columnName)
+                if (primaryKeyConflictClause == null) primaryKeyConflictClause = primaryKey.conflictClause
                 break
             }
         }
 
         sqlBuilder.append(columnName)
                 .append(' ')
-                .append(if (hasPrimaryKey) (modifiers - PRIMARY_KEY).text else modifiers.text)
+                .append((primaryKey?.let { modifiers - it } ?: modifiers).text)
                 .append(", ")
     }
     if (primaryKeys.isNotEmpty()) {
@@ -68,6 +70,7 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
             sqlBuilder.append(primaryKey)
         }
         sqlBuilder.append(')')
+        primaryKeyConflictClause?.let { sqlBuilder.append(' ').append(it.text) }
     }
     if (columnDefinitions.isNotEmpty() && primaryKeys.isEmpty()) sqlBuilder.setLength(sqlBuilder.length - 2)
 

@@ -24,7 +24,12 @@ enum class ConflictClause(val text: String) {
     ROLLBACK("ON CONFLICT ROLLBACK")
 }
 
-class ColumnModifier(val text: String)
+sealed class ColumnModifier(val text: String)
+
+private class ColumnModifierImpl(text: String) : ColumnModifier(text)
+
+class PrimaryKey(val conflictClause: ConflictClause? = null)
+    : ColumnModifier("PRIMARY KEY${conflictClause?.let { " " + it.text } ?: ""}")
 
 class ColumnModifiers(val modifiers: List<ColumnModifier>) {
     val text: String by lazy {
@@ -47,16 +52,16 @@ class ColumnModifiers(val modifiers: List<ColumnModifier>) {
     }
 }
 
-val PRIMARY_KEY = ColumnModifier("PRIMARY KEY")
-fun PRIMARY_KEY(conflictClause: ConflictClause) = ColumnModifier("PRIMARY KEY ${conflictClause.text}")
+val PRIMARY_KEY: ColumnModifier = PrimaryKey()
+fun PRIMARY_KEY(conflictClause: ConflictClause): ColumnModifier = PrimaryKey(conflictClause)
 
-val NOT_NULL = ColumnModifier("NOT NULL")
-fun NOT_NULL(conflictClause: ConflictClause) = ColumnModifier("NOT NULL ${conflictClause.text}")
+val NOT_NULL: ColumnModifier = ColumnModifierImpl("NOT NULL")
+fun NOT_NULL(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImpl("NOT NULL ${conflictClause.text}")
 
-val UNIQUE = ColumnModifier("UNIQUE")
-fun UNIQUE(conflictClause: ConflictClause) = ColumnModifier("UNIQUE ${conflictClause.text}")
+val UNIQUE: ColumnModifier = ColumnModifierImpl("UNIQUE")
+fun UNIQUE(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImpl("UNIQUE ${conflictClause.text}")
 
-val BLOB = ColumnModifiers(ColumnModifier("BLOB"))
-val INTEGER = ColumnModifiers(ColumnModifier("INTEGER"))
-val REAL = ColumnModifiers(ColumnModifier("REAL"))
-val TEXT = ColumnModifiers(ColumnModifier("TEXT"))
+val BLOB = ColumnModifiers(ColumnModifierImpl("BLOB"))
+val INTEGER = ColumnModifiers(ColumnModifierImpl("INTEGER"))
+val REAL = ColumnModifiers(ColumnModifierImpl("REAL"))
+val TEXT = ColumnModifiers(ColumnModifierImpl("TEXT"))
