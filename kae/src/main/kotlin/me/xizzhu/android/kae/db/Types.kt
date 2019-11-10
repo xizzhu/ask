@@ -16,7 +16,7 @@
 
 package me.xizzhu.android.kae.db
 
-enum class ConflictClause(val text: String) {
+enum class ConflictClause(internal val text: String) {
     ABORT("ON CONFLICT ABORT"),
     FAIL("ON CONFLICT FAIL"),
     IGNORE("ON CONFLICT IGNORE"),
@@ -24,7 +24,7 @@ enum class ConflictClause(val text: String) {
     ROLLBACK("ON CONFLICT ROLLBACK")
 }
 
-sealed class ColumnModifier(val text: String)
+sealed class ColumnModifier(internal val text: String)
 
 private class ColumnModifierImpl(text: String) : ColumnModifier(text)
 
@@ -32,7 +32,7 @@ class PrimaryKey(val conflictClause: ConflictClause? = null)
     : ColumnModifier("PRIMARY KEY${conflictClause?.let { " " + it.text } ?: ""}")
 
 class ColumnModifiers(val modifiers: List<ColumnModifier>) {
-    val text: String by lazy {
+    internal val text: String by lazy {
         StringBuilder().apply {
             modifiers.forEach { modifier ->
                 if (isNotEmpty()) append(' ')
