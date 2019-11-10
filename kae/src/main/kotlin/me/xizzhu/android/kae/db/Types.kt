@@ -61,6 +61,8 @@ fun NOT_NULL(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImp
 val UNIQUE: ColumnModifier = ColumnModifierImpl("UNIQUE")
 fun UNIQUE(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImpl("UNIQUE ${conflictClause.text}")
 
+fun DEFAULT(value: String): ColumnModifier = ColumnModifierImpl("DEFAULT $value")
+
 val BLOB = ColumnModifiers(ColumnModifierImpl("BLOB"))
 val INTEGER = ColumnModifiers(ColumnModifierImpl("INTEGER"))
 val REAL = ColumnModifiers(ColumnModifierImpl("REAL"))

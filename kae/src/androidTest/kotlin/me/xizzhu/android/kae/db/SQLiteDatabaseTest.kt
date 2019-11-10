@@ -73,7 +73,8 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                 "column1" to INTEGER + PRIMARY_KEY,
                 "column2" to TEXT + NOT_NULL,
                 "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
-                "column4" to REAL
+                "column4" to REAL,
+                "column5" to TEXT + DEFAULT("default_value")
         )
 
         assertEquals(
@@ -82,6 +83,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column2 TEXT NOT NULL, " +
                         "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
                         "column4 REAL, " +
+                        "column5 TEXT DEFAULT default_value, " +
                         "PRIMARY KEY(column1)" +
                         ");",
                 buildSqlForCreatingTable("tableName", true, columns)
@@ -96,7 +98,8 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                 "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ABORT),
                 "column2" to TEXT + NOT_NULL,
                 "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
-                "column4" to REAL
+                "column4" to REAL,
+                "column5" to TEXT + DEFAULT("default_value")
         )
 
         assertEquals(
@@ -105,6 +108,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column2 TEXT NOT NULL, " +
                         "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
                         "column4 REAL, " +
+                        "column5 TEXT DEFAULT default_value, " +
                         "PRIMARY KEY(column1) ON CONFLICT ABORT" +
                         ");",
                 buildSqlForCreatingTable("tableName", true, columns)
@@ -119,7 +123,8 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                 "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK),
                 "column2" to INTEGER + PRIMARY_KEY,
                 "column3" to INTEGER,
-                "column4" to TEXT
+                "column4" to TEXT,
+                "column5" to TEXT + DEFAULT("default_value")
         )
 
         assertEquals(
@@ -128,6 +133,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column2 INTEGER, " +
                         "column3 INTEGER, " +
                         "column4 TEXT, " +
+                        "column5 TEXT DEFAULT default_value, " +
                         "PRIMARY KEY(column1, column2) ON CONFLICT ROLLBACK" +
                         ");",
                 buildSqlForCreatingTable("tableName", true, columns)
