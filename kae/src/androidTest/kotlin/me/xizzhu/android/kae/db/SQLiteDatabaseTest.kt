@@ -69,6 +69,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testCreateTable() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY,
+                "column2" to TEXT + NOT_NULL,
+                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                "column4" to REAL
+        )
+
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
                         "column1 INTEGER, " +
@@ -77,27 +84,21 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column4 REAL, " +
                         "PRIMARY KEY(column1)" +
                         ");",
-                buildSqlForCreatingTable(
-                        "tableName", true,
-                        mapOf(
-                                "column1" to INTEGER + PRIMARY_KEY,
-                                "column2" to TEXT + NOT_NULL,
-                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
-                                "column4" to REAL
-                        )
-                )
+                buildSqlForCreatingTable("tableName", true, columns)
         )
 
-        database.createTable("tableName") {
-            it["column1"] = INTEGER + PRIMARY_KEY
-            it["column2"] = TEXT + NOT_NULL
-            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
-            it["column4"] = REAL
-        }
+        database.createTable("tableName") { it.putAll(columns) }
     }
 
     @Test
     fun testCreateTableWithConflictClause() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ABORT),
+                "column2" to TEXT + NOT_NULL,
+                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                "column4" to REAL
+        )
+
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
                         "column1 INTEGER, " +
@@ -106,27 +107,21 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column4 REAL, " +
                         "PRIMARY KEY(column1) ON CONFLICT ABORT" +
                         ");",
-                buildSqlForCreatingTable(
-                        "tableName", true,
-                        mapOf(
-                                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ABORT),
-                                "column2" to TEXT + NOT_NULL,
-                                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
-                                "column4" to REAL
-                        )
-                )
+                buildSqlForCreatingTable("tableName", true, columns)
         )
 
-        database.createTable("tableName") {
-            it["column1"] = INTEGER + PRIMARY_KEY(ConflictClause.ABORT)
-            it["column2"] = TEXT + NOT_NULL
-            it["column3"] = INTEGER + UNIQUE(ConflictClause.REPLACE)
-            it["column4"] = REAL
-        }
+        database.createTable("tableName") { it.putAll(columns) }
     }
 
     @Test
     fun testCreateTableWithMultiColumnPrimaryKey() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK),
+                "column2" to INTEGER + PRIMARY_KEY,
+                "column3" to INTEGER,
+                "column4" to TEXT
+        )
+
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
                         "column1 INTEGER, " +
@@ -135,23 +130,10 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                         "column4 TEXT, " +
                         "PRIMARY KEY(column1, column2) ON CONFLICT ROLLBACK" +
                         ");",
-                buildSqlForCreatingTable(
-                        "tableName", true,
-                        mapOf(
-                                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK),
-                                "column2" to INTEGER + PRIMARY_KEY,
-                                "column3" to INTEGER,
-                                "column4" to TEXT
-                        )
-                )
+                buildSqlForCreatingTable("tableName", true, columns)
         )
 
-        database.createTable("tableName") {
-            it["column1"] = INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK)
-            it["column2"] = INTEGER + PRIMARY_KEY
-            it["column3"] = INTEGER
-            it["column4"] = TEXT
-        }
+        database.createTable("tableName") { it.putAll(columns) }
     }
 
     @Test
