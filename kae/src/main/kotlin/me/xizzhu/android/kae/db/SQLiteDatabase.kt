@@ -18,6 +18,7 @@ package me.xizzhu.android.kae.db
 
 import android.database.sqlite.SQLiteDatabase
 import me.xizzhu.android.kae.content.toContentValues
+import me.xizzhu.android.kae.utils.forEachIndexed
 
 class TransactionAbortedException : RuntimeException()
 
@@ -28,6 +29,72 @@ fun SQLiteDatabase.hasTable(table: String): Boolean =
         rawQuery("SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name = '$table';", null).use {
             it.count > 0
         }
+
+/**
+ * Create a [table] with columns described in [block].
+ *
+ * @param ifNotExists If true, suppress the error in case the [table] already exists.
+ */
+fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
+    execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
+}
+
+internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
+    val sqlBuilder = StringBuilder("CREATE TABLE")
+    if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
+    sqlBuilder.append(' ').append(table)
+
+    sqlBuilder.append(" (")
+
+    val primaryKeys = arrayListOf<String>()
+    var primaryKeyConflictClause: ConflictClause? = null
+    val foreignKeys = hashMapOf<String, ForeignKey>()
+    columnDefinitions.forEachIndexed { index, (columnName, modifiers) ->
+        if (index > 0) sqlBuilder.append(", ")
+        sqlBuilder.append(columnName)
+
+        modifiers.modifiers.forEach { modifier ->
+            when (modifier) {
+                is PrimaryKey -> {
+                    primaryKeys.add(columnName)
+                    if (primaryKeyConflictClause == null) primaryKeyConflictClause = modifier.conflictClause
+                }
+                is ForeignKey -> {
+                    foreignKeys[columnName] = modifier
+                }
+                else -> {
+                    sqlBuilder.append(' ').append(modifier.text)
+                }
+            }
+        }
+    }
+    if (primaryKeys.isNotEmpty()) {
+        sqlBuilder.append(", PRIMARY KEY(")
+        primaryKeys.forEachIndexed { index, primaryKey ->
+            if (index > 0) sqlBuilder.append(", ")
+            sqlBuilder.append(primaryKey)
+        }
+        sqlBuilder.append(')')
+        primaryKeyConflictClause?.let { sqlBuilder.append(' ').append(it.text) }
+    }
+    foreignKeys.forEach { (columnName, foreignKey) ->
+        sqlBuilder.append(", FOREIGN KEY(")
+                .append(columnName)
+                .append(") REFERENCES ")
+                .append(foreignKey.referenceTable)
+                .append('(')
+                .append(foreignKey.referenceColumn)
+                .append(')')
+
+        foreignKey.constraints.forEach { constraint ->
+            sqlBuilder.append(' ').append(constraint.text)
+        }
+    }
+
+    sqlBuilder.append(");")
+
+    return sqlBuilder.toString()
+}
 
 /**
  * Remove the [table].
@@ -65,7 +132,7 @@ inline fun SQLiteDatabase.transaction(exclusive: Boolean = true, block: SQLiteDa
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
+        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
 
 /**
  * Insert values provided through [block] as a row into the [table].
@@ -74,7 +141,7 @@ inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, 
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues())
+        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
 
 /**
  * Insert values provided through [block] as a row into the [table], using [conflictAlgorithm] to resolve conflicts.
@@ -83,4 +150,4 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
 inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply { block(this) }.toContentValues(), conflictAlgorithm)
+        insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)

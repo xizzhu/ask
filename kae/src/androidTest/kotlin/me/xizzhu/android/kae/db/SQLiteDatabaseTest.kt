@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
 import me.xizzhu.android.kae.tests.BaseUnitTest
+import me.xizzhu.android.kae.tests.assertListEquals
 import kotlin.test.*
 
 class SQLiteDatabaseTest : BaseUnitTest() {
@@ -67,6 +68,105 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testCreateTable() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY,
+                "column2" to BLOB + NOT_NULL,
+                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                "column4" to REAL,
+                "column5" to TEXT + DEFAULT("default_value"),
+                "column6" to TEXT + FOREIGN_KEY(TABLE_NAME, COLUMN_KEY, ON_DELETE(ForeignKey.Constraint.Action.SET_NULL), ON_UPDATE(ForeignKey.Constraint.Action.CASCADE))
+        )
+
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER, " +
+                        "column2 BLOB NOT NULL, " +
+                        "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                        "column4 REAL, " +
+                        "column5 TEXT DEFAULT default_value, " +
+                        "column6 TEXT, " +
+                        "PRIMARY KEY(column1), " +
+                        "FOREIGN KEY(column6) REFERENCES testTable(testColumnKey) ON DELETE SET NULL ON UPDATE CASCADE" +
+                        ");",
+                buildSqlForCreatingTable("tableName", true, columns)
+        )
+
+        database.createTable("tableName") { it.putAll(columns) }
+    }
+
+    @Test
+    fun testCreateTableWithConflictClause() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ABORT),
+                "column2" to TEXT + NOT_NULL,
+                "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
+                "column4" to REAL,
+                "column5" to TEXT + DEFAULT("default_value"),
+                "column6" to TEXT + FOREIGN_KEY(TABLE_NAME, COLUMN_KEY)
+        )
+
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER, " +
+                        "column2 TEXT NOT NULL, " +
+                        "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                        "column4 REAL, " +
+                        "column5 TEXT DEFAULT default_value, " +
+                        "column6 TEXT, " +
+                        "PRIMARY KEY(column1) ON CONFLICT ABORT, " +
+                        "FOREIGN KEY(column6) REFERENCES testTable(testColumnKey)" +
+                        ");",
+                buildSqlForCreatingTable("tableName", true, columns)
+        )
+
+        database.createTable("tableName") { it.putAll(columns) }
+    }
+
+    @Test
+    fun testCreateTableWithMultiColumnPrimaryKey() {
+        val columns = mapOf(
+                "column1" to INTEGER + PRIMARY_KEY(ConflictClause.ROLLBACK),
+                "column2" to INTEGER + PRIMARY_KEY,
+                "column3" to INTEGER,
+                "column4" to TEXT,
+                "column5" to TEXT + DEFAULT("default_value"),
+                "column6" to TEXT + FOREIGN_KEY(TABLE_NAME, COLUMN_KEY)
+        )
+
+        assertEquals(
+                "CREATE TABLE IF NOT EXISTS tableName (" +
+                        "column1 INTEGER, " +
+                        "column2 INTEGER, " +
+                        "column3 INTEGER, " +
+                        "column4 TEXT, " +
+                        "column5 TEXT DEFAULT default_value, " +
+                        "column6 TEXT, " +
+                        "PRIMARY KEY(column1, column2) ON CONFLICT ROLLBACK, " +
+                        "FOREIGN KEY(column6) REFERENCES testTable(testColumnKey)" +
+                        ");",
+                buildSqlForCreatingTable("tableName", true, columns)
+        )
+
+        database.createTable("tableName") { it.putAll(columns) }
+    }
+
+    @Test
+    fun testCreateExistingTable() {
+        database.createTable(TABLE_NAME) {
+            it[COLUMN_KEY] = TEXT
+            it[COLUMN_VALUE] = TEXT
+        }
+
+        assertFailsWith(SQLiteException::class) {
+            database.createTable(TABLE_NAME, false) {
+                it[COLUMN_KEY] = TEXT
+                it[COLUMN_VALUE] = TEXT
+            }
+        }
+    }
+
+    @Test
     fun testDropTable() {
         assertTrue(database.hasTable(TABLE_NAME))
         database.dropTable(TABLE_NAME)
@@ -82,28 +182,27 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     @Test
     fun testTransaction() {
         database.transaction {
-            insert(TABLE_NAME, null, ContentValues()
-                    .apply {
-                        put(COLUMN_KEY, "key")
-                        put(COLUMN_VALUE, "value")
-                    })
+            insert(TABLE_NAME) {
+                it[COLUMN_KEY] = "key"
+                it[COLUMN_VALUE] = "value"
+            }
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(1, it.count)
-            assertTrue(it.moveToNext())
-            assertEquals("key", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to "value")),
+                    it.asSequence().toList()
+            )
         }
     }
 
     @Test
     fun testAbortTransaction() {
         database.transaction {
-            insert(TABLE_NAME, null, ContentValues().apply {
-                put(COLUMN_KEY, "key")
-                put(COLUMN_VALUE, "value")
-            })
+            insert(TABLE_NAME) {
+                it[COLUMN_KEY] = "key"
+                it[COLUMN_VALUE] = "value"
+            }
             throw TransactionAbortedException()
         }
 
@@ -149,15 +248,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 
@@ -186,15 +283,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 
@@ -232,15 +327,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-
-            assertTrue(it.moveToNext())
-            assertEquals("key1", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value1_updated", it.getString(it.getColumnIndex(COLUMN_VALUE)))
-
-            assertTrue(it.moveToNext())
-            assertEquals("key2", it.getString(it.getColumnIndex(COLUMN_KEY)))
-            assertEquals("value2_updated", it.getString(it.getColumnIndex(COLUMN_VALUE)))
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1_updated"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2_updated")
+                    ),
+                    it.asSequence().toList()
+            )
         }
     }
 }
