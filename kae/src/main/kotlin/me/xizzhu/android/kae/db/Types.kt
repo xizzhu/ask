@@ -30,6 +30,8 @@ private class ColumnModifierImpl(text: String) : ColumnModifier(text)
 
 class PrimaryKey(val conflictClause: ConflictClause? = null) : ColumnModifier("")
 
+class ForeignKey(val referenceTable: String, val referenceColumn: String) : ColumnModifier("")
+
 class ColumnModifiers(val modifiers: List<ColumnModifier>) {
     constructor(modifier: ColumnModifier) : this(listOf(modifier))
 
@@ -48,6 +50,8 @@ val UNIQUE: ColumnModifier = ColumnModifierImpl("UNIQUE")
 fun UNIQUE(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImpl("UNIQUE ${conflictClause.text}")
 
 fun DEFAULT(value: String): ColumnModifier = ColumnModifierImpl("DEFAULT $value")
+
+fun FOREIGN_KEY(referenceTable: String, referenceColumn: String): ForeignKey = ForeignKey(referenceTable, referenceColumn)
 
 val BLOB = ColumnModifiers(ColumnModifierImpl("BLOB"))
 val INTEGER = ColumnModifiers(ColumnModifierImpl("INTEGER"))

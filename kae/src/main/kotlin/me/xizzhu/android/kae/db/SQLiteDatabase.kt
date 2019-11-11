@@ -48,6 +48,7 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
 
     val primaryKeys = arrayListOf<String>()
     var primaryKeyConflictClause: ConflictClause? = null
+    val foreignKeys = hashMapOf<String, ForeignKey>()
     columnDefinitions.forEachIndexed { index, (columnName, modifiers) ->
         if (index > 0) sqlBuilder.append(", ")
         sqlBuilder.append(columnName)
@@ -57,6 +58,9 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
                 is PrimaryKey -> {
                     primaryKeys.add(columnName)
                     if (primaryKeyConflictClause == null) primaryKeyConflictClause = modifier.conflictClause
+                }
+                is ForeignKey -> {
+                    foreignKeys[columnName] = modifier
                 }
                 else -> {
                     sqlBuilder.append(' ').append(modifier.text)
@@ -72,6 +76,15 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
         }
         sqlBuilder.append(')')
         primaryKeyConflictClause?.let { sqlBuilder.append(' ').append(it.text) }
+    }
+    foreignKeys.forEach { (columnName, foreignKey) ->
+        sqlBuilder.append(", FOREIGN KEY(")
+                .append(columnName)
+                .append(") REFERENCES ")
+                .append(foreignKey.referenceTable)
+                .append('(')
+                .append(foreignKey.referenceColumn)
+                .append(')')
     }
 
     sqlBuilder.append(");")
