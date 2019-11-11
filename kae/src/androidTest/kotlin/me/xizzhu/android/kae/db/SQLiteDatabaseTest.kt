@@ -71,23 +71,23 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testCreateTable() {
         val columns = mapOf(
                 "column1" to INTEGER + PRIMARY_KEY,
-                "column2" to TEXT + NOT_NULL,
+                "column2" to BLOB + NOT_NULL,
                 "column3" to INTEGER + UNIQUE(ConflictClause.REPLACE),
                 "column4" to REAL,
                 "column5" to TEXT + DEFAULT("default_value"),
-                "column6" to TEXT + FOREIGN_KEY(TABLE_NAME, COLUMN_KEY)
+                "column6" to TEXT + FOREIGN_KEY(TABLE_NAME, COLUMN_KEY, ON_DELETE(ForeignKey.Constraint.Action.SET_NULL), ON_UPDATE(ForeignKey.Constraint.Action.CASCADE))
         )
 
         assertEquals(
                 "CREATE TABLE IF NOT EXISTS tableName (" +
                         "column1 INTEGER, " +
-                        "column2 TEXT NOT NULL, " +
+                        "column2 BLOB NOT NULL, " +
                         "column3 INTEGER UNIQUE ON CONFLICT REPLACE, " +
                         "column4 REAL, " +
                         "column5 TEXT DEFAULT default_value, " +
                         "column6 TEXT, " +
                         "PRIMARY KEY(column1), " +
-                        "FOREIGN KEY(column6) REFERENCES testTable(testColumnKey)" +
+                        "FOREIGN KEY(column6) REFERENCES testTable(testColumnKey) ON DELETE SET NULL ON UPDATE CASCADE" +
                         ");",
                 buildSqlForCreatingTable("tableName", true, columns)
         )

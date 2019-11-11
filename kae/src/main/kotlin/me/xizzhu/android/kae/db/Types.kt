@@ -30,7 +30,20 @@ private class ColumnModifierImpl(text: String) : ColumnModifier(text)
 
 class PrimaryKey(val conflictClause: ConflictClause? = null) : ColumnModifier("")
 
-class ForeignKey(val referenceTable: String, val referenceColumn: String) : ColumnModifier("")
+class ForeignKey(val referenceTable: String, val referenceColumn: String, val constraints: List<Constraint>) : ColumnModifier("") {
+    sealed class Constraint(internal val text: String) {
+        enum class Action(internal val text: String) {
+            CASCADE("CASCADE"),
+            NO_ACTION("NO ACTION"),
+            SET_DEFAULT("SET DEFAULT"),
+            SET_NULL("SET NULL"),
+            SET_RESTRICT("SET RESTRICT")
+        }
+
+        class OnDelete(action: Action) : Constraint("ON DELETE ${action.text}")
+        class OnUpdate(action: Action) : Constraint("ON UPDATE ${action.text}")
+    }
+}
 
 class ColumnModifiers(val modifiers: List<ColumnModifier>) {
     constructor(modifier: ColumnModifier) : this(listOf(modifier))
@@ -51,7 +64,15 @@ fun UNIQUE(conflictClause: ConflictClause): ColumnModifier = ColumnModifierImpl(
 
 fun DEFAULT(value: String): ColumnModifier = ColumnModifierImpl("DEFAULT $value")
 
-fun FOREIGN_KEY(referenceTable: String, referenceColumn: String): ForeignKey = ForeignKey(referenceTable, referenceColumn)
+fun FOREIGN_KEY(referenceTable: String, referenceColumn: String,
+                vararg constraints: ForeignKey.Constraint)
+        : ForeignKey = ForeignKey(referenceTable, referenceColumn, constraints.toList())
+
+fun ON_DELETE(action: ForeignKey.Constraint.Action): ForeignKey.Constraint.OnDelete =
+        ForeignKey.Constraint.OnDelete(action)
+
+fun ON_UPDATE(action: ForeignKey.Constraint.Action): ForeignKey.Constraint.OnUpdate =
+        ForeignKey.Constraint.OnUpdate(action)
 
 val BLOB = ColumnModifiers(ColumnModifierImpl("BLOB"))
 val INTEGER = ColumnModifiers(ColumnModifierImpl("INTEGER"))

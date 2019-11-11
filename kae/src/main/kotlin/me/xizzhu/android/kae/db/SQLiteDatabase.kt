@@ -85,6 +85,10 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
                 .append('(')
                 .append(foreignKey.referenceColumn)
                 .append(')')
+
+        foreignKey.constraints.forEach { constraint ->
+            sqlBuilder.append(' ').append(constraint.text)
+        }
     }
 
     sqlBuilder.append(");")
