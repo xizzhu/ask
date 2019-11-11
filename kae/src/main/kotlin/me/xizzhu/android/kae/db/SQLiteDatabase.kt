@@ -18,6 +18,7 @@ package me.xizzhu.android.kae.db
 
 import android.database.sqlite.SQLiteDatabase
 import me.xizzhu.android.kae.content.toContentValues
+import me.xizzhu.android.kae.utils.forEachIndexed
 
 class TransactionAbortedException : RuntimeException()
 
@@ -47,24 +48,24 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
 
     val primaryKeys = arrayListOf<String>()
     var primaryKeyConflictClause: ConflictClause? = null
-    columnDefinitions.forEach { (columnName, modifiers) ->
-        var primaryKey: PrimaryKey? = null
-        for (modifier in modifiers.modifiers) {
-            if (modifier is PrimaryKey) {
-                primaryKey = modifier
-                primaryKeys.add(columnName)
-                if (primaryKeyConflictClause == null) primaryKeyConflictClause = primaryKey.conflictClause
-                break
+    columnDefinitions.forEachIndexed { index, (columnName, modifiers) ->
+        if (index > 0) sqlBuilder.append(", ")
+        sqlBuilder.append(columnName)
+
+        modifiers.modifiers.forEach { modifier ->
+            when (modifier) {
+                is PrimaryKey -> {
+                    primaryKeys.add(columnName)
+                    if (primaryKeyConflictClause == null) primaryKeyConflictClause = modifier.conflictClause
+                }
+                else -> {
+                    sqlBuilder.append(' ').append(modifier.text)
+                }
             }
         }
-
-        sqlBuilder.append(columnName)
-                .append(' ')
-                .append((primaryKey?.let { modifiers - it } ?: modifiers).text)
-                .append(", ")
     }
     if (primaryKeys.isNotEmpty()) {
-        sqlBuilder.append("PRIMARY KEY(")
+        sqlBuilder.append(", PRIMARY KEY(")
         primaryKeys.forEachIndexed { index, primaryKey ->
             if (index > 0) sqlBuilder.append(", ")
             sqlBuilder.append(primaryKey)
@@ -72,7 +73,6 @@ internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, colum
         sqlBuilder.append(')')
         primaryKeyConflictClause?.let { sqlBuilder.append(' ').append(it.text) }
     }
-    if (columnDefinitions.isNotEmpty() && primaryKeys.isEmpty()) sqlBuilder.setLength(sqlBuilder.length - 2)
 
     sqlBuilder.append(");")
 

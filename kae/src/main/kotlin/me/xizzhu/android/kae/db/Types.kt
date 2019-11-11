@@ -28,27 +28,13 @@ sealed class ColumnModifier(internal val text: String)
 
 private class ColumnModifierImpl(text: String) : ColumnModifier(text)
 
-class PrimaryKey(val conflictClause: ConflictClause? = null)
-    : ColumnModifier("PRIMARY KEY${conflictClause?.let { " " + it.text } ?: ""}")
+class PrimaryKey(val conflictClause: ConflictClause? = null) : ColumnModifier("")
 
 class ColumnModifiers(val modifiers: List<ColumnModifier>) {
-    internal val text: String by lazy {
-        StringBuilder().apply {
-            modifiers.forEach { modifier ->
-                if (isNotEmpty()) append(' ')
-                append(modifier.text)
-            }
-        }.toString()
-    }
-
     constructor(modifier: ColumnModifier) : this(listOf(modifier))
 
     operator fun plus(modifier: ColumnModifier): ColumnModifiers {
         return ColumnModifiers(ArrayList<ColumnModifier>(modifiers).apply { add(modifier) })
-    }
-
-    operator fun minus(modifier: ColumnModifier): ColumnModifiers {
-        return ColumnModifiers(ArrayList<ColumnModifier>(modifiers).apply { remove(modifier) })
     }
 }
 
