@@ -336,4 +336,39 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             )
         }
     }
+
+    @Test
+    fun testDeleteNonExistTable() {
+        assertFailsWith(SQLiteException::class) {
+            database.deleteAll("non_exist")
+        }
+    }
+
+    @Test
+    fun testDeleteEmptyTable() {
+        database.deleteAll(TABLE_NAME)
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
+
+    @Test
+    fun testDeleteAll() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1"
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2"
+        }
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(2, it.count)
+        }
+
+        database.deleteAll(TABLE_NAME)
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
 }

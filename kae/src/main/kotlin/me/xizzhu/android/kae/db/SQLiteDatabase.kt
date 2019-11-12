@@ -151,3 +151,12 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  */
 inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
+
+/**
+ * Delete all values from [table].
+ *
+ * @throws SQLException
+ */
+fun SQLiteDatabase.deleteAll(table: String) {
+    delete(table, null, null)
+}
