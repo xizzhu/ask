@@ -342,11 +342,20 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         assertFailsWith(SQLiteException::class) {
             database.deleteAll("non_exist")
         }
+
+        assertFailsWith(SQLiteException::class) {
+            database.delete("non_exist") { "key" eq "value" }
+        }
     }
 
     @Test
     fun testDeleteEmptyTable() {
         database.deleteAll(TABLE_NAME)
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(0, it.count)
         }
@@ -367,6 +376,42 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         }
 
         database.deleteAll(TABLE_NAME)
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
+
+    @Test
+    fun testDelete() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = "value1"
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+            it[COLUMN_VALUE] = "value2"
+        }
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(2, it.count)
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key2" and (COLUMN_VALUE eq "value") })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key2" and (COLUMN_VALUE eq "value2") })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(0, it.count)
         }

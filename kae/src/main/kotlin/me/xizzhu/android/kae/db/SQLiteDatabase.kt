@@ -160,3 +160,11 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
 fun SQLiteDatabase.deleteAll(table: String) {
     delete(table, null, null)
 }
+
+/**
+ * Delete values from [table] matching conditions by [where].
+ *
+ * @throws SQLException
+ * @return The number of rows deleted.
+ */
+fun SQLiteDatabase.delete(table: String, where: WhereBuilder.() -> Where): Int = delete(table, where(WhereBuilder).text, null)
