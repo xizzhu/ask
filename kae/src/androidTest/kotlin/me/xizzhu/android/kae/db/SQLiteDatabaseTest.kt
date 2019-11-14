@@ -363,17 +363,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     @Test
     fun testDeleteAll() {
-        database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
-        }
-        database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
-        }
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
-        }
+        populateDatabase()
 
         database.deleteAll(TABLE_NAME)
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
@@ -381,8 +371,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         }
     }
 
-    @Test
-    fun testDelete() {
+    private fun populateDatabase() {
         database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = "value1"
@@ -394,6 +383,11 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)
         }
+    }
+
+    @Test
+    fun testDelete() {
+        populateDatabase()
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
@@ -402,18 +396,53 @@ class SQLiteDatabaseTest : BaseUnitTest() {
                     it.asSequence().toList()
             )
         }
+    }
 
-        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key2" and (COLUMN_VALUE eq "value") })
+    @Test
+    fun testDeleteWhereAnd() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq "value") })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq "value1") })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
                     it.asSequence().toList()
             )
         }
+    }
 
-        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key2" and (COLUMN_VALUE eq "value2") })
+    @Test
+    fun testDeleteWhereOr() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key" or (COLUMN_VALUE eq "value") })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq "value") })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    it.asSequence().toList()
+            )
         }
     }
 }
