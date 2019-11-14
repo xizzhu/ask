@@ -380,19 +380,41 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 2L
         }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key3"
+            it[COLUMN_VALUE] = 3L
+        }
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(2, it.count)
+            assertEquals(3, it.count)
         }
     }
 
     @Test
-    fun testDelete() {
+    fun testDeleteWhereEq() {
         populateDatabase()
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
+
+    @Test
+    fun testDeleteWhereNeq() {
+        populateDatabase()
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY neq "key1" })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                    ),
                     it.asSequence().toList()
             )
         }
@@ -407,7 +429,8 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                     ),
                     it.asSequence().toList()
             )
@@ -416,7 +439,10 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 1L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
                     it.asSequence().toList()
             )
         }
@@ -431,7 +457,8 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                     ),
                     it.asSequence().toList()
             )
@@ -440,7 +467,10 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq 0L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
                     it.asSequence().toList()
             )
         }

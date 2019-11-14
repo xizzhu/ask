@@ -19,6 +19,8 @@ package me.xizzhu.android.kae.db
 sealed class Where(internal val text: String) {
     class Equal<T>(key: String, value: T) : Where("$key = '${value.toString()}'")
 
+    class NotEqual<T>(key: String, value: T) : Where("$key != '${value.toString()}'")
+
     class And(exp1: Where, exp2: Where) : Where("${exp1.text} AND ${exp2.text}")
 
     class Or(exp1: Where, exp2: Where) : Where("${exp1.text} OR ${exp2.text}")
@@ -26,6 +28,8 @@ sealed class Where(internal val text: String) {
 
 object WhereBuilder {
     infix fun <T> String.eq(value: T): Where.Equal<T> = Where.Equal(this, value)
+
+    infix fun <T> String.neq(value: T): Where.NotEqual<T> = Where.NotEqual(this, value)
 
     infix fun Where.and(another: Where): Where = Where.And(this, another)
 
