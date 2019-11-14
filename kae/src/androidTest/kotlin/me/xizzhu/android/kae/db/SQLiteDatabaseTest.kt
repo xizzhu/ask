@@ -37,7 +37,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
 
     private class DatabaseOpenHelper : SQLiteOpenHelper(ApplicationProvider.getApplicationContext(), DB_NAME, null, 1) {
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_KEY TEXT UNIQUE, $COLUMN_VALUE TEXT)")
+            db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_KEY TEXT UNIQUE, $COLUMN_VALUE INTEGER)")
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -155,13 +155,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testCreateExistingTable() {
         database.createTable(TABLE_NAME) {
             it[COLUMN_KEY] = TEXT
-            it[COLUMN_VALUE] = TEXT
+            it[COLUMN_VALUE] = INTEGER
         }
 
         assertFailsWith(SQLiteException::class) {
             database.createTable(TABLE_NAME, false) {
                 it[COLUMN_KEY] = TEXT
-                it[COLUMN_VALUE] = TEXT
+                it[COLUMN_VALUE] = INTEGER
             }
         }
     }
@@ -184,13 +184,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.transaction {
             insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to "value")),
+                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to 0L)),
                     it.asSequence().toList()
             )
         }
@@ -201,7 +201,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.transaction {
             insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
             throw TransactionAbortedException()
         }
@@ -217,7 +217,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             database.transaction {
                 insert(TABLE_NAME, null, ContentValues().apply {
                     put(COLUMN_KEY, "key")
-                    put(COLUMN_VALUE, "value")
+                    put(COLUMN_VALUE, 0L)
                 })
                 throw RuntimeException()
             }
@@ -232,26 +232,26 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testInsert() {
         assertNotEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
+            it[COLUMN_VALUE] = 1L
         })
         assertNotEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
+            it[COLUMN_VALUE] = 2L
         })
         assertEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value"
+            it[COLUMN_VALUE] = 0L
         })
         assertEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value"
+            it[COLUMN_VALUE] = 0L
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
                     ),
                     it.asSequence().toList()
             )
@@ -262,31 +262,31 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testInsertOrThrow() {
         assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
+            it[COLUMN_VALUE] = 1L
         })
         assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
+            it[COLUMN_VALUE] = 2L
         })
 
         assertFailsWith(SQLException::class) {
             database.insertOrThrow(TABLE_NAME) {
                 it[COLUMN_KEY] = "key1"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
         assertFailsWith(SQLException::class) {
             database.insertOrThrow(TABLE_NAME) {
                 it[COLUMN_KEY] = "key2"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
                     ),
                     it.asSequence().toList()
             )
@@ -297,40 +297,40 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testInsertWithOnConflict() {
         assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
+            it[COLUMN_VALUE] = 1L
         })
         assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
+            it[COLUMN_VALUE] = 2L
         })
 
         assertFailsWith(SQLException::class) {
             database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
                 it[COLUMN_KEY] = "key1"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
         assertFailsWith(SQLException::class) {
             database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
                 it[COLUMN_KEY] = "key2"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
 
         assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1_updated"
+            it[COLUMN_VALUE] = 3L
         })
         assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2_updated"
+            it[COLUMN_VALUE] = 4L
         })
 
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1_updated"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2_updated")
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 3L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 4L)
                     ),
                     it.asSequence().toList()
             )
@@ -374,11 +374,11 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     private fun populateDatabase() {
         database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
+            it[COLUMN_VALUE] = 1L
         }
         database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
+            it[COLUMN_VALUE] = 2L
         }
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertEquals(2, it.count)
@@ -392,7 +392,7 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
                     it.asSequence().toList()
             )
         }
@@ -402,21 +402,21 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testDeleteWhereAnd() {
         populateDatabase()
 
-        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq "value") })
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 0L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
                     ),
                     it.asSequence().toList()
             )
         }
 
-        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq "value1") })
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 1L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
                     it.asSequence().toList()
             )
         }
@@ -426,21 +426,21 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testDeleteWhereOr() {
         populateDatabase()
 
-        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key" or (COLUMN_VALUE eq "value") })
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key" or (COLUMN_VALUE eq 0L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
                     listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
                     ),
                     it.asSequence().toList()
             )
         }
 
-        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq "value") })
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq 0L) })
         database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")),
+                    listOf(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)),
                     it.asSequence().toList()
             )
         }
