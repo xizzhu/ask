@@ -460,6 +460,35 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testDeleteWhereLess() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE less 1L })
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 0L })
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE less 2L })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 2L })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
+
+    @Test
     fun testDeleteWhereAnd() {
         populateDatabase()
 
