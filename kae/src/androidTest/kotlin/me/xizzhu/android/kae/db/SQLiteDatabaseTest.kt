@@ -518,6 +518,29 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testDeleteWhereLike() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY like "non_exist" })
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY like "%1" })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY notLike "non_exist" })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
+
+    @Test
     fun testDeleteWhereAnd() {
         populateDatabase()
 

@@ -33,6 +33,10 @@ sealed class Where(internal val text: String) {
 
     class GreaterOrEqual<T>(key: String, value: T) : Where("$key >= '${value.toString()}'")
 
+    class Like(key: String, pattern: String) : Where("$key LIKE '$pattern'")
+
+    class NotLike(key: String, pattern: String) : Where("$key NOT LIKE '$pattern'")
+
     class And(exp1: Where, exp2: Where) : Where("${exp1.text} AND ${exp2.text}")
 
     class Or(exp1: Where, exp2: Where) : Where("${exp1.text} OR ${exp2.text}")
@@ -54,6 +58,10 @@ object WhereBuilder {
     infix fun <T> String.greater(value: T): Where.Greater<T> = Where.Greater(this, value)
 
     infix fun <T> String.greaterEq(value: T): Where.GreaterOrEqual<T> = Where.GreaterOrEqual(this, value)
+
+    infix fun String.like(pattern: String): Where.Like = Where.Like(this, pattern)
+
+    infix fun String.notLike(pattern: String): Where.NotLike = Where.NotLike(this, pattern)
 
     infix fun Where.and(another: Where): Where = Where.And(this, another)
 
