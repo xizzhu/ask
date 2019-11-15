@@ -489,6 +489,35 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testDeleteWhereGreater() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greater 3L })
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 4L })
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greater 2L })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 2L })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
+
+    @Test
     fun testDeleteWhereAnd() {
         populateDatabase()
 
