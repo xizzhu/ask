@@ -35,14 +35,10 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
     @Test
     fun testDeleteEmptyTable() {
         database.deleteAll(TABLE_NAME)
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -50,9 +46,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         database.deleteAll(TABLE_NAME)
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -71,14 +65,12 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key4"
         }
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(4, it.count)
-        }
+        selectAll().use { assertEquals(4, it.count) }
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY.isNull() })
 
         assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE.isNull() })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
@@ -89,9 +81,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE.isNotNull() })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -99,7 +89,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
@@ -115,7 +105,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY neq "key1" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
@@ -133,7 +123,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 0L })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE less 2L })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
@@ -144,7 +134,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 2L })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
@@ -162,7 +152,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 4L })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greater 2L })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
@@ -173,7 +163,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 2L })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
@@ -190,7 +180,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY like "%non_exist%" })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY like "%Y1" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
@@ -201,9 +191,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY notLike "%non_exist%" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -214,7 +202,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY glob "*KEY*" })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY glob "*y1" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
@@ -225,9 +213,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY glob "*key*" })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -235,7 +221,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 0L) })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
@@ -247,7 +233,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 1L) })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
@@ -263,7 +249,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY eq "key" or (COLUMN_VALUE eq 0L) })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
@@ -275,7 +261,7 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         }
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq 0L) })
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
