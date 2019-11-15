@@ -17,6 +17,10 @@
 package me.xizzhu.android.kae.db
 
 sealed class Where(internal val text: String) {
+    class IsNull(key: String) : Where("$key IS NULL")
+
+    class IsNotNull(key: String) : Where("$key IS NOT NULL")
+
     class Equal<T>(key: String, value: T) : Where("$key = '${value.toString()}'")
 
     class NotEqual<T>(key: String, value: T) : Where("$key != '${value.toString()}'")
@@ -27,6 +31,10 @@ sealed class Where(internal val text: String) {
 }
 
 object WhereBuilder {
+    fun String.isNull(): Where.IsNull = Where.IsNull(this)
+
+    fun String.isNotNull(): Where.IsNotNull = Where.IsNotNull(this)
+
     infix fun <T> String.eq(value: T): Where.Equal<T> = Where.Equal(this, value)
 
     infix fun <T> String.neq(value: T): Where.NotEqual<T> = Where.NotEqual(this, value)

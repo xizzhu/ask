@@ -390,6 +390,45 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     }
 
     @Test
+    fun testDeleteWhereIsNull() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = 1L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key3"
+            it[COLUMN_VALUE] = 3L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key4"
+        }
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(4, it.count)
+        }
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY.isNull() })
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE.isNull() })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE.isNotNull() })
+        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+            assertEquals(0, it.count)
+        }
+    }
+
+    @Test
     fun testDeleteWhereEq() {
         populateDatabase()
 
