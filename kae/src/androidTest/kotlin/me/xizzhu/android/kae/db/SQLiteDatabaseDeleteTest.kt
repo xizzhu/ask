@@ -239,6 +239,27 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testDeleteWhereIn() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_KEY inList listOf("non_exist") })
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_KEY inList listOf("key1") })
+        selectAll().use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_KEY notInList listOf("key1") })
+        selectAll().use { assertEquals(0, it.count) }
+    }
+
+    @Test
     fun testDeleteWhereAnd() {
         populateDatabase()
 

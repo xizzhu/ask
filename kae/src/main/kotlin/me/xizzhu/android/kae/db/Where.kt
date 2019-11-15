@@ -41,6 +41,10 @@ sealed class Where(internal val text: String) {
 
     class Glob(key: String, pattern: String) : Where("$key GLOB '$pattern'")
 
+    class InList<T>(key: String, values: Iterable<T>) : Where("$key IN (${values.joinToString(prefix = "'", postfix = "'")})")
+
+    class NotInList<T>(key: String, values: Iterable<T>) : Where("$key NOT IN (${values.joinToString(prefix = "'", postfix = "'")})")
+
     class And(exp1: Where, exp2: Where) : Where("${exp1.text} AND ${exp2.text}")
 
     class Or(exp1: Where, exp2: Where) : Where("${exp1.text} OR ${exp2.text}")
@@ -70,6 +74,10 @@ object WhereBuilder {
     infix fun String.notLike(pattern: String): Where.NotLike = Where.NotLike(this, pattern)
 
     infix fun String.glob(pattern: String): Where.Glob = Where.Glob(this, pattern)
+
+    infix fun <T> String.inList(values: Iterable<T>): Where.InList<T> = Where.InList(this, values)
+
+    infix fun <T> String.notInList(values: Iterable<T>): Where.NotInList<T> = Where.NotInList(this, values)
 
     infix fun Where.and(another: Where): Where = Where.And(this, another)
 
