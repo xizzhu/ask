@@ -174,6 +174,28 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testDeleteWhereBetween() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE.between(Long.MIN_VALUE, 0L) })
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE.between(4L, Long.MAX_VALUE) })
+
+        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE.between(3L, Long.MAX_VALUE) })
+        selectAll().use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE.between(Long.MIN_VALUE, Long.MAX_VALUE) })
+        selectAll().use { assertEquals(0, it.count) }
+    }
+
+    @Test
     fun testDeleteWhereLike() {
         populateDatabase()
 

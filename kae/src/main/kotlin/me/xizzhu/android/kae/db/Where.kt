@@ -33,6 +33,8 @@ sealed class Where(internal val text: String) {
 
     class GreaterOrEqual<T>(key: String, value: T) : Where("$key >= '${value.toString()}'")
 
+    class Between<T>(key: String, from: T, to: T) : Where("$key BETWEEN '${from.toString()}' AND '${to.toString()}'")
+
     class Like(key: String, pattern: String) : Where("$key LIKE '$pattern'")
 
     class NotLike(key: String, pattern: String) : Where("$key NOT LIKE '$pattern'")
@@ -60,6 +62,8 @@ object WhereBuilder {
     infix fun <T> String.greater(value: T): Where.Greater<T> = Where.Greater(this, value)
 
     infix fun <T> String.greaterEq(value: T): Where.GreaterOrEqual<T> = Where.GreaterOrEqual(this, value)
+
+    fun <T> String.between(from: T, to: T): Where.Between<T> = Where.Between(this, from, to)
 
     infix fun String.like(pattern: String): Where.Like = Where.Like(this, pattern)
 
