@@ -35,11 +35,14 @@ fun SQLiteDatabase.hasTable(table: String): Boolean =
  *
  * @param ifNotExists If true, suppress the error in case the [table] already exists.
  */
-fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
+inline fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
     execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
 }
 
-internal fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
+/**
+ * @internal
+ */
+fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
     val sqlBuilder = StringBuilder("CREATE TABLE")
     if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
     sqlBuilder.append(' ').append(table)
@@ -151,3 +154,25 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  */
 inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
+
+/**
+ * Delete all values from [table].
+ *
+ * @throws SQLException
+ */
+fun SQLiteDatabase.deleteAll(table: String) {
+    delete(table, null, null)
+}
+
+/**
+ * Delete values from [table] matching conditions by [where].
+ *
+ * @throws SQLException
+ * @return The number of rows deleted.
+ */
+inline fun SQLiteDatabase.delete(table: String, where: WhereBuilder.() -> Where): Int = delete(table, buildSqlForWhere(where(WhereBuilder)), null)
+
+/**
+ * @internal
+ */
+fun buildSqlForWhere(where: Where): String = where.text

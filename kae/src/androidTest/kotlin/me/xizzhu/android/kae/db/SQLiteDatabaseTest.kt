@@ -17,50 +17,11 @@
 package me.xizzhu.android.kae.db
 
 import android.content.ContentValues
-import android.content.Context
-import android.database.SQLException
-import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
-import android.database.sqlite.SQLiteOpenHelper
-import androidx.test.core.app.ApplicationProvider
-import me.xizzhu.android.kae.tests.BaseUnitTest
 import me.xizzhu.android.kae.tests.assertListEquals
 import kotlin.test.*
 
-class SQLiteDatabaseTest : BaseUnitTest() {
-    companion object {
-        private const val DB_NAME = "db"
-        private const val TABLE_NAME = "testTable"
-        private const val COLUMN_KEY = "testColumnKey"
-        private const val COLUMN_VALUE = "testColumnValue"
-    }
-
-    private class DatabaseOpenHelper : SQLiteOpenHelper(ApplicationProvider.getApplicationContext(), DB_NAME, null, 1) {
-        override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_KEY TEXT UNIQUE, $COLUMN_VALUE TEXT)")
-        }
-
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // do nothing
-        }
-    }
-
-    private lateinit var database: SQLiteDatabase
-
-    @BeforeTest
-    override fun setup() {
-        super.setup()
-        ApplicationProvider.getApplicationContext<Context>().deleteDatabase(DB_NAME)
-        database = DatabaseOpenHelper().writableDatabase
-    }
-
-    @AfterTest
-    override fun tearDown() {
-        database.close()
-        ApplicationProvider.getApplicationContext<Context>().deleteDatabase(DB_NAME)
-        super.tearDown()
-    }
-
+class SQLiteDatabaseTest : BaseSQLiteDatabaseTest() {
     @Test
     fun testHasTable() {
         assertTrue(database.hasTable(TABLE_NAME))
@@ -155,13 +116,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
     fun testCreateExistingTable() {
         database.createTable(TABLE_NAME) {
             it[COLUMN_KEY] = TEXT
-            it[COLUMN_VALUE] = TEXT
+            it[COLUMN_VALUE] = INTEGER
         }
 
         assertFailsWith(SQLiteException::class) {
             database.createTable(TABLE_NAME, false) {
                 it[COLUMN_KEY] = TEXT
-                it[COLUMN_VALUE] = TEXT
+                it[COLUMN_VALUE] = INTEGER
             }
         }
     }
@@ -184,13 +145,13 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.transaction {
             insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
         }
 
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
+        selectAll().use {
             assertListEquals(
-                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to "value")),
+                    listOf(mapOf(COLUMN_KEY to "key", COLUMN_VALUE to 0L)),
                     it.asSequence().toList()
             )
         }
@@ -201,14 +162,12 @@ class SQLiteDatabaseTest : BaseUnitTest() {
         database.transaction {
             insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key"
-                it[COLUMN_VALUE] = "value"
+                it[COLUMN_VALUE] = 0L
             }
             throw TransactionAbortedException()
         }
 
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 
     @Test
@@ -217,123 +176,12 @@ class SQLiteDatabaseTest : BaseUnitTest() {
             database.transaction {
                 insert(TABLE_NAME, null, ContentValues().apply {
                     put(COLUMN_KEY, "key")
-                    put(COLUMN_VALUE, "value")
+                    put(COLUMN_VALUE, 0L)
                 })
                 throw RuntimeException()
             }
         }
 
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertEquals(0, it.count)
-        }
-    }
-
-    @Test
-    fun testInsert() {
-        assertNotEquals(-1L, database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
-        })
-        assertNotEquals(-1L, database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
-        })
-        assertEquals(-1L, database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value"
-        })
-        assertEquals(-1L, database.insert(TABLE_NAME) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value"
-        })
-
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
-                    ),
-                    it.asSequence().toList()
-            )
-        }
-    }
-
-    @Test
-    fun testInsertOrThrow() {
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
-        })
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
-        })
-
-        assertFailsWith(SQLException::class) {
-            database.insertOrThrow(TABLE_NAME) {
-                it[COLUMN_KEY] = "key1"
-                it[COLUMN_VALUE] = "value"
-            }
-        }
-        assertFailsWith(SQLException::class) {
-            database.insertOrThrow(TABLE_NAME) {
-                it[COLUMN_KEY] = "key2"
-                it[COLUMN_VALUE] = "value"
-            }
-        }
-
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2")
-                    ),
-                    it.asSequence().toList()
-            )
-        }
-    }
-
-    @Test
-    fun testInsertWithOnConflict() {
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1"
-        })
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2"
-        })
-
-        assertFailsWith(SQLException::class) {
-            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-                it[COLUMN_KEY] = "key1"
-                it[COLUMN_VALUE] = "value"
-            }
-        }
-        assertFailsWith(SQLException::class) {
-            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-                it[COLUMN_KEY] = "key2"
-                it[COLUMN_VALUE] = "value"
-            }
-        }
-
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
-            it[COLUMN_KEY] = "key1"
-            it[COLUMN_VALUE] = "value1_updated"
-        })
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
-            it[COLUMN_KEY] = "key2"
-            it[COLUMN_VALUE] = "value2_updated"
-        })
-
-        database.rawQuery("SELECT * from $TABLE_NAME;", null).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to "value1_updated"),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to "value2_updated")
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        selectAll().use { assertEquals(0, it.count) }
     }
 }
