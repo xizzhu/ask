@@ -37,7 +37,9 @@ fun <T> assertListEquals(expected: List<T>, actual: List<T>) {
 fun <K, V> assertMapEquals(expected: Map<K, V>, actual: Map<K, V>) {
     assertEquals(expected.count(), actual.count(), "Map size mismatch")
     expected.forEach { (key, expectedValue) ->
-        val actualValue = actual.getOrElse(key) { fail("Missing value for '$key' from the map") }
+        if (!actual.containsKey(key)) fail("Missing value for '$key' from the map")
+
+        val actualValue = actual[key]
         when (expectedValue) {
             is List<*> -> if (actualValue is List<*>) assertListEquals(expectedValue, actualValue) else fail("Element type mismatch")
             is Map<*, *> -> if (actualValue is Map<*, *>) assertMapEquals(expectedValue as Map<Any?, Any?>, actualValue as Map<Any?, Any?>) else fail("Element type mismatch")
