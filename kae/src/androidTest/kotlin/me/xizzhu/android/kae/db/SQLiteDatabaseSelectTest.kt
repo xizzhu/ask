@@ -61,6 +61,33 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testSelectWithColumns() {
+        populateDatabase()
+
+        database.selectAll(TABLE_NAME, COLUMN_KEY).use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1"),
+                            mapOf(COLUMN_KEY to "key2"),
+                            mapOf(COLUMN_KEY to "key3")
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+
+        database.select(TABLE_NAME, COLUMN_VALUE) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_VALUE to 2L),
+                            mapOf(COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
+
+    @Test
     fun testSelectLimit() {
         populateDatabase()
 
