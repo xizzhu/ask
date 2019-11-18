@@ -24,109 +24,93 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     @Test
     fun testSelectNonExistTable() {
         assertFailsWith(SQLiteException::class) {
-            database.select("non_exist") { "key" eq "value" }
+            database.select("non_exist") { "key" eq "value" }.asCursor()
         }
     }
 
     @Test
     fun testSelectEmptyTable() {
-        database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.use { assertEquals(0, it.count) }
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList().isEmpty())
     }
 
     @Test
     fun testSelectAll() {
         populateDatabase()
 
-        database.selectAll(TABLE_NAME).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.selectAll(TABLE_NAME)
+        )
 
-        database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList()
+        )
     }
 
     @Test
     fun testSelectWithColumns() {
         populateDatabase()
 
-        database.selectAll(TABLE_NAME, COLUMN_KEY).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1"),
-                            mapOf(COLUMN_KEY to "key2"),
-                            mapOf(COLUMN_KEY to "key3")
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1"),
+                        mapOf(COLUMN_KEY to "key2"),
+                        mapOf(COLUMN_KEY to "key3")
+                ),
+                database.selectAll(TABLE_NAME, COLUMN_KEY)
+        )
 
-        database.select(TABLE_NAME, COLUMN_VALUE) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_VALUE to 3L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME, COLUMN_VALUE) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList()
+        )
     }
 
     @Test
     fun testSelectLimit() {
         populateDatabase()
 
-        database.selectAll(TABLE_NAME, limit = 1).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(1L).toList()
+        )
 
-        database.selectAll(TABLE_NAME, limit = -1, offset = 1).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(-1L).offset(1L).toList()
+        )
 
-        database.selectAll(TABLE_NAME, limit = 1, offset = 1).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(1L).offset(1L).toList()
+        )
 
-        database.selectAll(TABLE_NAME, limit = 2, offset = 1).use {
-            assertListEquals(
-                    listOf(
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                    ),
-                    it.asSequence().toList()
-            )
-        }
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(2L).offset(1L).toList()
+        )
     }
 }

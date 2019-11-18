@@ -17,6 +17,7 @@
 package me.xizzhu.android.kae.tests
 
 import kotlin.test.*
+import org.junit.Assert.assertArrayEquals
 
 fun <T> assertListEquals(expected: List<T>, actual: List<T>) {
     assertEquals(expected.count(), actual.count(), "List size mismatch")
@@ -29,6 +30,7 @@ fun <T> assertListEquals(expected: List<T>, actual: List<T>) {
         when (expectedElement) {
             is List<*> -> if (actualElement is List<*>) assertListEquals(expectedElement, actualElement) else fail("Element type mismatch")
             is Map<*, *> -> if (actualElement is Map<*, *>) assertMapEquals(expectedElement as Map<Any?, Any?>, actualElement as Map<Any?, Any?>) else fail("Element type mismatch")
+            is ByteArray -> if (actualElement is ByteArray) assertArrayEquals(expectedElement, actualElement as ByteArray) else fail("Element type mismatch")
             else -> assertEquals(expectedElement, actualElement)
         }
     }
@@ -43,6 +45,7 @@ fun <K, V> assertMapEquals(expected: Map<K, V>, actual: Map<K, V>) {
         when (expectedValue) {
             is List<*> -> if (actualValue is List<*>) assertListEquals(expectedValue, actualValue) else fail("Element type mismatch")
             is Map<*, *> -> if (actualValue is Map<*, *>) assertMapEquals(expectedValue as Map<Any?, Any?>, actualValue as Map<Any?, Any?>) else fail("Element type mismatch")
+            is ByteArray -> if (actualValue is ByteArray) assertArrayEquals(expectedValue, actualValue as ByteArray) else fail("Element type mismatch")
             else -> assertEquals(expectedValue, actualValue)
         }
     }

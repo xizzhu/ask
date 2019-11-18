@@ -70,3 +70,16 @@ private fun Cursor.getRow(): Map<String, Any?> = hashMapOf<String, Any?>().apply
         )
     }
 }
+
+/**
+ * Create a [List] that contains all the data from the [Cursor], and close the cursor.
+ *
+ * Each element in the list represents one row from the cursor as a [Map]. The key is the column
+ * name, and the value is the value of the column.
+ */
+fun Cursor.toList(): List<Map<String, Any?>> = ArrayList<Map<String, Any?>>().apply {
+    this@toList.use { cursor ->
+        ensureCapacity(cursor.count)
+        while (cursor.moveToNext()) add(cursor.getRow())
+    }
+}
