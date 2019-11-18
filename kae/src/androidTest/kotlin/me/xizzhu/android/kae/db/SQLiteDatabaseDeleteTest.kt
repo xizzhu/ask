@@ -326,4 +326,19 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
             )
         }
     }
+
+    @Test
+    fun testDeleteWhereNot() {
+        populateDatabase()
+
+        assertEquals(2, database.delete(TABLE_NAME) { not(COLUMN_KEY eq "key1") })
+        selectAll().use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
 }
