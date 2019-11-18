@@ -163,8 +163,26 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
  * @return A [Cursor] object, positioned before the first entry.
  */
 inline fun SQLiteDatabase.select(table: String, vararg columns: String, distinct: Boolean = false,
+                                 limit: Long = -1L, offset: Long = -1L,
                                  where: WhereBuilder.() -> Where): Cursor =
-        query(distinct, table, columns, buildSqlForWhere(where(WhereBuilder)), null, null, null, null, null)
+        query(distinct, table, columns, buildSqlForWhere(where(WhereBuilder)), null, null, null, null,
+                buildLimitClause(limit, offset))
+
+/**
+ * @internal
+ */
+fun buildLimitClause(limit: Long, offset: Long): String? {
+    if (limit < 0L && offset <= 0L) return null
+
+    return StringBuilder().apply {
+        if (offset > 0) append(offset)
+        if (isNotEmpty()) append(',')
+
+        // in case limit < 0, it means we have offset, we need to put the limit there, but Android
+        // doesn't like a negative limit, so we put Long.MAX_VALUE in this case
+        append(if (limit < 0) Long.MAX_VALUE else limit)
+    }.toString()
+}
 
 /**
  * Update [values] matching conditions by [where] into the [table].
