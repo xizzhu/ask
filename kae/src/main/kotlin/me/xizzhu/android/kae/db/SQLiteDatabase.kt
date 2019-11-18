@@ -157,15 +157,14 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**
- * Query [columns] from the [table] matching the condition by [where].
+ * Query [columns] from the [table].
  *
  * @throws SQLException
  * @return A [Cursor] object, positioned before the first entry.
  */
-inline fun SQLiteDatabase.select(table: String, vararg columns: String, distinct: Boolean = false,
-                                 limit: Long = -1L, offset: Long = -1L,
-                                 where: WhereBuilder.() -> Where): Cursor =
-        query(distinct, table, columns, buildSqlForWhere(where(WhereBuilder)), null, null, null, null,
+inline fun SQLiteDatabase.selectAll(table: String, vararg columns: String, distinct: Boolean = false,
+                                    limit: Long = -1L, offset: Long = -1L): Cursor =
+        query(distinct, table, columns, null, null, null, null, null,
                 buildLimitClause(limit, offset))
 
 /**
@@ -183,6 +182,18 @@ fun buildLimitClause(limit: Long, offset: Long): String? {
         append(if (limit < 0) Long.MAX_VALUE else limit)
     }.toString()
 }
+
+/**
+ * Query [columns] from the [table] matching the condition by [where].
+ *
+ * @throws SQLException
+ * @return A [Cursor] object, positioned before the first entry.
+ */
+inline fun SQLiteDatabase.select(table: String, vararg columns: String, distinct: Boolean = false,
+                                 limit: Long = -1L, offset: Long = -1L,
+                                 where: WhereBuilder.() -> Where): Cursor =
+        query(distinct, table, columns, buildSqlForWhere(where(WhereBuilder)), null, null, null, null,
+                buildLimitClause(limit, offset))
 
 /**
  * Update [values] matching conditions by [where] into the [table].
