@@ -156,6 +156,23 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**
+ * Update [values] matching conditions by [where] into the [table].
+ *
+ * @throws SQLException
+ * @return The number of rows affected.
+ */
+inline fun SQLiteDatabase.update(table: String, values: (MutableMap<String, Any?>) -> Unit,
+                                 conflictAlgorithm: Int = SQLiteDatabase.CONFLICT_NONE,
+                                 where: WhereBuilder.() -> Where): Int =
+        updateWithOnConflict(table, hashMapOf<String, Any?>().apply(values).toContentValues(),
+                buildSqlForWhere(where(WhereBuilder)), null, conflictAlgorithm)
+
+/**
+ * @internal
+ */
+fun buildSqlForWhere(where: Where): String = where.text
+
+/**
  * Delete all values from [table].
  *
  * @throws SQLException
@@ -171,8 +188,3 @@ fun SQLiteDatabase.deleteAll(table: String) {
  * @return The number of rows deleted.
  */
 inline fun SQLiteDatabase.delete(table: String, where: WhereBuilder.() -> Where): Int = delete(table, buildSqlForWhere(where(WhereBuilder)), null)
-
-/**
- * @internal
- */
-fun buildSqlForWhere(where: Where): String = where.text
