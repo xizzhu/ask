@@ -16,6 +16,7 @@
 
 package me.xizzhu.android.kae.db
 
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import me.xizzhu.android.kae.content.toContentValues
 import me.xizzhu.android.kae.utils.forEachIndexed
@@ -154,6 +155,16 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  */
 inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
+
+/**
+ * Query [columns] from the [table] matching the condition by [where].
+ *
+ * @throws SQLException
+ * @return A [Cursor] object, positioned before the first entry.
+ */
+inline fun SQLiteDatabase.select(table: String, vararg columns: String, distinct: Boolean = false,
+                                 where: WhereBuilder.() -> Where): Cursor =
+        query(distinct, table, columns, buildSqlForWhere(where(WhereBuilder)), null, null, null, null, null)
 
 /**
  * Update [values] matching conditions by [where] into the [table].
