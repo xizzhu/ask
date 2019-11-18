@@ -120,7 +120,6 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE less 1L })
-        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 0L })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE less 2L })
         selectAll().use {
@@ -132,8 +131,15 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
                     it.asSequence().toList()
             )
         }
+    }
 
-        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 2L })
+    @Test
+    fun testDeleteWhereLessEq() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 0L })
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE lessEq 2L })
         selectAll().use {
             assertListEquals(
                     listOf(
@@ -149,7 +155,6 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
         populateDatabase()
 
         assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greater 3L })
-        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 4L })
 
         assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greater 2L })
         selectAll().use {
@@ -161,8 +166,15 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
                     it.asSequence().toList()
             )
         }
+    }
 
-        assertEquals(1, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 2L })
+    @Test
+    fun testDeleteWhereGreaterEq() {
+        populateDatabase()
+
+        assertEquals(0, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 4L })
+
+        assertEquals(2, database.delete(TABLE_NAME) { COLUMN_VALUE greaterEq 2L })
         selectAll().use {
             assertListEquals(
                     listOf(
@@ -309,6 +321,21 @@ class SQLiteDatabaseDeleteTest : BaseSQLiteDatabaseTest() {
                     listOf(
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                             mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
+
+    @Test
+    fun testDeleteWhereNot() {
+        populateDatabase()
+
+        assertEquals(2, database.delete(TABLE_NAME) { not(COLUMN_KEY eq "key1") })
+        selectAll().use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
                     ),
                     it.asSequence().toList()
             )

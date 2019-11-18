@@ -363,4 +363,21 @@ class SQLiteDatabaseUpdateTest : BaseSQLiteDatabaseTest() {
             )
         }
     }
+
+    @Test
+    fun testUpdateWhereNot() {
+        populateDatabase()
+
+        assertEquals(2, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 1234L }) { not(COLUMN_KEY eq "key1") })
+        selectAll().use {
+            assertListEquals(
+                    listOf(
+                            mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 1234L),
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 1234L)
+                    ),
+                    it.asSequence().toList()
+            )
+        }
+    }
 }
