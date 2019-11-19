@@ -17,6 +17,8 @@
 package me.xizzhu.android.kae.db
 
 sealed class Where(internal val text: String) {
+    class NoOp : Where("")
+
     class IsNull(key: String) : Where("$key IS NULL")
 
     class IsNotNull(key: String) : Where("$key IS NOT NULL")

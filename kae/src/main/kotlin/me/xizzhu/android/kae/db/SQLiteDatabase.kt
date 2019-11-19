@@ -157,22 +157,13 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**
- * Return a [List] containing all rows of the given [columns] from the [table].
- *
- * @throws SQLException
- * @return A [Cursor] object, positioned before the first entry.
- */
-fun SQLiteDatabase.selectAll(table: String, vararg columns: String): List<Map<String, Any?>> =
-        Query(this, table, columns).toList()
-
-/**
  * Create a [Query] to get values from [columns] of the [table] matching the condition by [where]. Note
  * that the query is not executed until [Query.asCursor] or other methods are called.
  *
  * @return A [Query] object.
  */
 inline fun SQLiteDatabase.select(table: String, vararg columns: String,
-                                 where: WhereBuilder.() -> Where): Query =
+                                 where: WhereBuilder.() -> Where = { Where.NoOp() }): Query =
         Query(this, table, columns, buildSqlForWhere(where(WhereBuilder)))
 
 /**

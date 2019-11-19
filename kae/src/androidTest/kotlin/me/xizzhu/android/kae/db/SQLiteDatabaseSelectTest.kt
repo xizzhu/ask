@@ -24,13 +24,13 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     @Test
     fun testSelectNonExistTable() {
         assertFailsWith(SQLiteException::class) {
-            database.select("non_exist") { "key" eq "value" }.asCursor()
+            database.select("non_exist").asCursor()
         }
     }
 
     @Test
     fun testSelectEmptyTable() {
-        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList().isEmpty())
+        assertTrue(database.select(TABLE_NAME).toList().isEmpty())
     }
 
     @Test
@@ -43,16 +43,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                         mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                 ),
-                database.selectAll(TABLE_NAME)
-        )
-
-        assertListEquals(
-                listOf(
-                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList()
+                database.select(TABLE_NAME).toList()
         )
     }
 
@@ -62,20 +53,11 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
 
         assertListEquals(
                 listOf(
-                        mapOf(COLUMN_KEY to "key1"),
-                        mapOf(COLUMN_KEY to "key2"),
-                        mapOf(COLUMN_KEY to "key3")
-                ),
-                database.selectAll(TABLE_NAME, COLUMN_KEY)
-        )
-
-        assertListEquals(
-                listOf(
                         mapOf(COLUMN_VALUE to 1L),
                         mapOf(COLUMN_VALUE to 2L),
                         mapOf(COLUMN_VALUE to 3L)
                 ),
-                database.select(TABLE_NAME, COLUMN_VALUE) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.toList()
+                database.select(TABLE_NAME, COLUMN_VALUE).toList()
         )
     }
 
@@ -106,7 +88,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf("column1" to "key2", "column2" to 2L),
                         mapOf("column1" to "key2", "column2" to 3L)
                 ),
-                database.select("another_table") { "column1".isNotNull() }.toList()
+                database.select("another_table").toList()
         )
 
         assertListEquals(
@@ -115,7 +97,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf("column1" to "key2", "column2" to 2L),
                         mapOf("column1" to "key2", "column2" to 3L)
                 ),
-                database.select("another_table") { "column1".isNotNull() }.distinct().toList()
+                database.select("another_table").distinct().toList()
         )
     }
 
@@ -129,7 +111,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                         mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.orderBy(COLUMN_KEY, sortOrder = SortOrder.DESCENDING).toList()
+                database.select(TABLE_NAME).orderBy(COLUMN_KEY, sortOrder = SortOrder.DESCENDING).toList()
         )
     }
 
@@ -141,7 +123,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                 listOf(
                         mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(1L).toList()
+                database.select(TABLE_NAME).limit(1L).toList()
         )
 
         assertListEquals(
@@ -149,14 +131,14 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                         mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(-1L).offset(1L).toList()
+                database.select(TABLE_NAME).limit(-1L).offset(1L).toList()
         )
 
         assertListEquals(
                 listOf(
                         mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(1L).offset(1L).toList()
+                database.select(TABLE_NAME).limit(1L).offset(1L).toList()
         )
 
         assertListEquals(
@@ -164,7 +146,7 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                         mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                         mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.limit(2L).offset(1L).toList()
+                database.select(TABLE_NAME).limit(2L).offset(1L).toList()
         )
     }
 }
