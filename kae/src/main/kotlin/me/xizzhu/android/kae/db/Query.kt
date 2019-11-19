@@ -19,9 +19,16 @@ package me.xizzhu.android.kae.db
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 
+enum class SortOrder(internal val text: String) {
+    ASCENDING("ASC"),
+    DESCENDING("DESC")
+}
+
 class Query(private val db: SQLiteDatabase, private val table: String,
             private val columns: Array<out String>, private val where: String = "") {
     private var distinct: Boolean = false
+    private var orderBy: Array<out String>? = null
+    private var sortOrder: SortOrder = SortOrder.ASCENDING
     private var limit: Long = -1L
     private var offset: Long = -1L
 
@@ -29,14 +36,19 @@ class Query(private val db: SQLiteDatabase, private val table: String,
 
     fun limit(limit: Long): Query = apply { this.limit = limit }
 
+    fun orderBy(vararg columns: String, sortOrder: SortOrder = SortOrder.ASCENDING) = apply {
+        orderBy = columns
+        this.sortOrder = sortOrder
+    }
+
     fun offset(offset: Long): Query = apply { this.offset = offset }
 
     /**
      * Execute the query and return a [Cursor] positioned before the first entry.
      */
     fun asCursor(): Cursor =
-            db.query(distinct, table, columns, where, null, null, null, null,
-                    buildLimitClause())
+            db.query(distinct, table, columns, where, null, null, null,
+                    buildOrderByClause(), buildLimitClause())
 
     private fun buildLimitClause(): String? {
         if (limit < 0L && offset <= 0L) return null
@@ -48,6 +60,16 @@ class Query(private val db: SQLiteDatabase, private val table: String,
             // in case limit < 0, it means we have offset, we need to put the limit there, but Android
             // doesn't like a negative limit, so we put Long.MAX_VALUE in this case
             append(if (limit < 0) Long.MAX_VALUE else limit)
+        }.toString()
+    }
+
+    private fun buildOrderByClause(): String? = orderBy?.let { columns ->
+        StringBuilder().apply {
+            columns.forEach { column ->
+                if (isNotEmpty()) append(',')
+                append(column)
+            }
+            append(' ').append(sortOrder.text)
         }.toString()
     }
 

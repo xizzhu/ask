@@ -120,6 +120,20 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testOrderBy() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY.isNull() or COLUMN_KEY.isNotNull() }.orderBy(COLUMN_KEY, sortOrder = SortOrder.DESCENDING).toList()
+        )
+    }
+
+    @Test
     fun testSelectLimit() {
         populateDatabase()
 
