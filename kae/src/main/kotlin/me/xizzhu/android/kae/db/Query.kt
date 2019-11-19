@@ -25,7 +25,7 @@ class Query(private val db: SQLiteDatabase, private val table: String,
     private var limit: Long = -1L
     private var offset: Long = -1L
 
-    fun distinct(distinct: Boolean): Query = apply { this.distinct = distinct }
+    fun distinct(distinct: Boolean = true): Query = apply { this.distinct = distinct }
 
     fun limit(limit: Long): Query = apply { this.limit = limit }
 

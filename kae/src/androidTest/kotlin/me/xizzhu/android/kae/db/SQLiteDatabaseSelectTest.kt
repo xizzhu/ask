@@ -80,6 +80,46 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testDistinct() {
+        database.execSQL("CREATE TABLE another_table (column1 TEXT, column2 INTEGER)")
+        database.insert("another_table") {
+            it["column1"] = "key1"
+            it["column2"] = 1L
+        }
+        database.insert("another_table") {
+            it["column1"] = "key1"
+            it["column2"] = 1L
+        }
+        database.insert("another_table") {
+            it["column1"] = "key2"
+            it["column2"] = 2L
+        }
+        database.insert("another_table") {
+            it["column1"] = "key2"
+            it["column2"] = 3L
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "column2" to 1L),
+                        mapOf("column1" to "key1", "column2" to 1L),
+                        mapOf("column1" to "key2", "column2" to 2L),
+                        mapOf("column1" to "key2", "column2" to 3L)
+                ),
+                database.select("another_table") { "column1".isNotNull() }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "column2" to 1L),
+                        mapOf("column1" to "key2", "column2" to 2L),
+                        mapOf("column1" to "key2", "column2" to 3L)
+                ),
+                database.select("another_table") { "column1".isNotNull() }.distinct().toList()
+        )
+    }
+
+    @Test
     fun testSelectLimit() {
         populateDatabase()
 
