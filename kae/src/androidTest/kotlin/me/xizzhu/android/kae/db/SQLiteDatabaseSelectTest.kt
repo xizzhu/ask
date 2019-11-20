@@ -103,6 +103,88 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testGroupBy() {
+        database.execSQL("CREATE TABLE another_table (column1 TEXT, column2 REAL)")
+        database.insert("another_table") {
+            it["column1"] = "key1"
+            it["column2"] = 1.0
+        }
+        database.insert("another_table") {
+            it["column1"] = "key1"
+            it["column2"] = 2.0
+        }
+        database.insert("another_table") {
+            it["column1"] = "key2"
+            it["column2"] = 3.0
+        }
+        database.insert("another_table") {
+            it["column1"] = "key2"
+            it["column2"] = 3.0
+        }
+        database.insert("another_table") {
+            it["column1"] = "key2"
+            it["column2"] = 6.0
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "AVG(column2)" to 1.5),
+                        mapOf("column1" to "key2", "AVG(column2)" to 4.0)
+                ),
+                database.select("another_table", "column1", avg("column2")).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "AVG(DISTINCT column2)" to 1.5),
+                        mapOf("column1" to "key2", "AVG(DISTINCT column2)" to 4.5)
+                ),
+                database.select("another_table", "column1", avg("column2", true)).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "COUNT(column2)" to 2L),
+                        mapOf("column1" to "key2", "COUNT(column2)" to 3L)
+                ),
+                database.select("another_table", "column1", count("column2")).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "COUNT(DISTINCT column2)" to 2L),
+                        mapOf("column1" to "key2", "COUNT(DISTINCT column2)" to 2L)
+                ),
+                database.select("another_table", "column1", count("column2", true)).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "MIN(column2)" to 1.0),
+                        mapOf("column1" to "key2", "MIN(column2)" to 3.0)
+                ),
+                database.select("another_table", "column1", min("column2")).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "MAX(column2)" to 2.0),
+                        mapOf("column1" to "key2", "MAX(column2)" to 6.0)
+                ),
+                database.select("another_table", "column1", max("column2")).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "SUM(column2)" to 3.0),
+                        mapOf("column1" to "key2", "SUM(column2)" to 12.0)
+                ),
+                database.select("another_table", "column1", sum("column2")).groupBy("column1").toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf("column1" to "key1", "SUM(DISTINCT column2)" to 3.0),
+                        mapOf("column1" to "key2", "SUM(DISTINCT column2)" to 9.0)
+                ),
+                database.select("another_table", "column1", sum("column2", true)).groupBy("column1").toList()
+        )
+    }
+
+    @Test
     fun testOrderBy() {
         populateDatabase()
 
