@@ -34,12 +34,12 @@ class Query(private val db: SQLiteDatabase, private val table: String,
 
     fun distinct(distinct: Boolean = true): Query = apply { this.distinct = distinct }
 
-    fun limit(limit: Long): Query = apply { this.limit = limit }
-
     fun orderBy(vararg columns: String, sortOrder: SortOrder = SortOrder.ASCENDING) = apply {
         orderBy = columns
         this.sortOrder = sortOrder
     }
+
+    fun limit(limit: Long): Query = apply { this.limit = limit }
 
     fun offset(offset: Long): Query = apply { this.offset = offset }
 
@@ -72,9 +72,19 @@ class Query(private val db: SQLiteDatabase, private val table: String,
             append(' ').append(sortOrder.text)
         }.toString()
     }
-
-    /**
-     * Execute the query and return a [List] containing all the rows from the query.
-     */
-    fun toList(): List<Map<String, Any?>> = asCursor().toList()
 }
+
+/**
+ * Execute the query and perform the given [action] on each row from the query.
+ */
+inline fun Query.forEach(action: (Map<String, Any?>) -> Unit) = asCursor().forEach(action)
+
+/**
+ * Execute the query and perform the given [action] on all the rows from the query.
+ */
+inline fun Query.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = asCursor().forEachIndexed(action)
+
+/**
+ * Execute the query and return a [List] containing each row from the query.
+ */
+fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()

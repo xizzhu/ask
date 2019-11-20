@@ -18,6 +18,7 @@ package me.xizzhu.android.kae.db
 
 import android.database.sqlite.SQLiteException
 import me.xizzhu.android.kae.tests.assertListEquals
+import me.xizzhu.android.kae.tests.assertMapEquals
 import kotlin.test.*
 
 class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
@@ -148,5 +149,43 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                 ),
                 database.select(TABLE_NAME).limit(2L).offset(1L).toList()
         )
+    }
+
+    @Test
+    fun testForEach() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME).toList()
+        )
+
+        var index = 0
+        database.select(TABLE_NAME).forEach { row ->
+            when (index++) {
+                0 -> assertMapEquals(mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L), row)
+                1 -> assertMapEquals(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L), row)
+                2 -> assertMapEquals(mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L), row)
+                else -> fail()
+            }
+        }
+    }
+
+    @Test
+    fun testForEachIndexed() {
+        populateDatabase()
+
+        database.select(TABLE_NAME).forEachIndexed { index, row ->
+            when (index) {
+                0 -> assertMapEquals(mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L), row)
+                1 -> assertMapEquals(mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L), row)
+                2 -> assertMapEquals(mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L), row)
+                else -> fail()
+            }
+        }
     }
 }

@@ -136,6 +136,20 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
+    fun testForEach() {
+        prepareDatabase()
+
+        var index = 0
+        queryAll().forEach { row -> assertEquals(index++, row) }
+    }
+
+    @Test
+    fun testForEachIndexed() {
+        prepareDatabase()
+        queryAll().forEachIndexed { index, row -> assertEquals(index, row) }
+    }
+
+    @Test
     fun testToList() {
         prepareDatabase()
 

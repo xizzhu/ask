@@ -16,7 +16,7 @@
 
 package me.xizzhu.android.kae.utils
 
-inline fun <K, V> Map<out K, V>.forEachIndexed(action: (index: Int, Map.Entry<K, V>) -> Unit) {
+inline fun <K, V> Map<out K, V>.forEachIndexed(action: (Int, Map.Entry<K, V>) -> Unit) {
     var index = 0
     for (element in this) action(index++, element)
 }
