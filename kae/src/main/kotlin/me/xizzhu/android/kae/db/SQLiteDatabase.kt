@@ -16,7 +16,6 @@
 
 package me.xizzhu.android.kae.db
 
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import me.xizzhu.android.kae.content.toContentValues
 import me.xizzhu.android.kae.utils.forEachIndexed
@@ -157,31 +156,31 @@ inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm:
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**
- * Create a [Query] to get values from [columns] of the [table] matching the condition by [where]. Note
+ * Create a [Query] to get values from [columns] of the [table] matching the given [condition]. Note
  * that the query is not executed until [Query.asCursor] or other methods are called.
  *
  * @return A [Query] object.
  */
 inline fun SQLiteDatabase.select(table: String, vararg columns: String,
-                                 where: WhereBuilder.() -> Where = { Where.NoOp() }): Query =
-        Query(this, table, columns, buildSqlForWhere(where(WhereBuilder)))
+                                 condition: ConditionBuilder.() -> Condition = { Condition.NoOp() }): Query =
+        Query(this, table, columns, buildSqlForWhere(condition(ConditionBuilder)))
 
 /**
- * Update [values] matching conditions by [where] into the [table].
+ * Update [values] matching the given [condition] into the [table].
  *
  * @throws SQLException
  * @return The number of rows affected.
  */
 inline fun SQLiteDatabase.update(table: String, values: (MutableMap<String, Any?>) -> Unit,
                                  conflictAlgorithm: Int = SQLiteDatabase.CONFLICT_NONE,
-                                 where: WhereBuilder.() -> Where): Int =
+                                 condition: ConditionBuilder.() -> Condition): Int =
         updateWithOnConflict(table, hashMapOf<String, Any?>().apply(values).toContentValues(),
-                buildSqlForWhere(where(WhereBuilder)), null, conflictAlgorithm)
+                buildSqlForWhere(condition(ConditionBuilder)), null, conflictAlgorithm)
 
 /**
  * @internal
  */
-fun buildSqlForWhere(where: Where): String = where.text
+fun buildSqlForWhere(condition: Condition): String = condition.text
 
 /**
  * Delete all values from [table].
@@ -193,9 +192,9 @@ fun SQLiteDatabase.deleteAll(table: String) {
 }
 
 /**
- * Delete values from [table] matching conditions by [where].
+ * Delete values from [table] matching the given [condition].
  *
  * @throws SQLException
  * @return The number of rows deleted.
  */
-inline fun SQLiteDatabase.delete(table: String, where: WhereBuilder.() -> Where): Int = delete(table, buildSqlForWhere(where(WhereBuilder)), null)
+inline fun SQLiteDatabase.delete(table: String, condition: ConditionBuilder.() -> Condition): Int = delete(table, buildSqlForWhere(condition(ConditionBuilder)), null)
