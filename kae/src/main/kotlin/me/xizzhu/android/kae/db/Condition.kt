@@ -43,9 +43,9 @@ sealed class Condition(internal val text: String) {
 
     class Glob(key: String, pattern: String) : Condition("$key GLOB '$pattern'")
 
-    class InList<T>(key: String, values: Iterable<T>) : Condition("$key IN (${values.joinToString(prefix = "'", postfix = "'")})")
+    class InList<T>(key: String, values: Iterable<T>) : Condition("$key IN (${values.joinToString(prefix = "'", postfix = "'", separator = "', '")})")
 
-    class NotInList<T>(key: String, values: Iterable<T>) : Condition("$key NOT IN (${values.joinToString(prefix = "'", postfix = "'")})")
+    class NotInList<T>(key: String, values: Iterable<T>) : Condition("$key NOT IN (${values.joinToString(prefix = "'", postfix = "'", separator = "', '")})")
 
     class And(exp1: Condition, exp2: Condition) : Condition("${exp1.text} AND ${exp2.text}")
 

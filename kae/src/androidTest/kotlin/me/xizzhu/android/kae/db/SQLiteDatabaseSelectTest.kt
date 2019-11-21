@@ -242,9 +242,10 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
         assertTrue(database.select(TABLE_NAME) { COLUMN_KEY inList listOf("non_exist") }.toList().isEmpty())
         assertListEquals(
                 listOf(
-                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY inList listOf("key1") }.toList()
+                database.select(TABLE_NAME) { COLUMN_KEY inList listOf("key1", "key3", "non_exist") }.toList()
         )
     }
 
@@ -254,10 +255,9 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
 
         assertListEquals(
                 listOf(
-                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
                 ),
-                database.select(TABLE_NAME) { COLUMN_KEY notInList listOf("key2") }.toList()
+                database.select(TABLE_NAME) { COLUMN_KEY notInList listOf("key2", "key3") }.toList()
         )
     }
 
