@@ -27,15 +27,15 @@ sealed class Condition(internal val text: String) {
 
     class NotEqual<T>(key: String, value: T) : Condition("$key != '${value.toString()}'")
 
-    class Less<T>(key: String, value: T) : Condition("$key < '${value.toString()}'")
+    class Less<T>(key: String, value: T) : Condition("$key < ${value.toString()}")
 
-    class LessOrEqual<T>(key: String, value: T) : Condition("$key <= '${value.toString()}'")
+    class LessOrEqual<T>(key: String, value: T) : Condition("$key <= ${value.toString()}")
 
-    class Greater<T>(key: String, value: T) : Condition("$key > '${value.toString()}'")
+    class Greater<T>(key: String, value: T) : Condition("$key > ${value.toString()}")
 
-    class GreaterOrEqual<T>(key: String, value: T) : Condition("$key >= '${value.toString()}'")
+    class GreaterOrEqual<T>(key: String, value: T) : Condition("$key >= ${value.toString()}")
 
-    class Between<T>(key: String, from: T, to: T) : Condition("$key BETWEEN '${from.toString()}' AND '${to.toString()}'")
+    class Between<T>(key: String, from: T, to: T) : Condition("$key BETWEEN ${from.toString()} AND ${to.toString()}")
 
     class Like(key: String, pattern: String) : Condition("$key LIKE '$pattern'")
 

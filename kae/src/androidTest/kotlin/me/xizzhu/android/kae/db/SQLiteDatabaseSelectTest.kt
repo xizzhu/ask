@@ -185,6 +185,21 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testHaving() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key3", "COUNT($COLUMN_VALUE)" to 1L)
+                ),
+                database.select(TABLE_NAME, COLUMN_KEY, count(COLUMN_VALUE))
+                        .groupBy(COLUMN_KEY)
+                        .having { max(COLUMN_VALUE) greater 2L }
+                        .toList()
+        )
+    }
+
+    @Test
     fun testOrderBy() {
         populateDatabase()
 

@@ -28,6 +28,7 @@ class Query(private val db: SQLiteDatabase, private val table: String,
             private val columns: Array<out String>, private val where: String = "") {
     private var distinct: Boolean = false
     private var groupBy: Array<out String>? = null
+    private var having: Condition? = null
     private var orderBy: Array<out String>? = null
     private var sortOrder: SortOrder = SortOrder.ASCENDING
     private var limit: Long = -1L
@@ -36,6 +37,8 @@ class Query(private val db: SQLiteDatabase, private val table: String,
     fun distinct(distinct: Boolean = true): Query = apply { this.distinct = distinct }
 
     fun groupBy(vararg columns: String) = apply { groupBy = columns }
+
+    fun having(condition: ConditionBuilder.() -> Condition) = apply { having = condition(ConditionBuilder) }
 
     fun orderBy(vararg columns: String, sortOrder: SortOrder = SortOrder.ASCENDING) = apply {
         orderBy = columns
@@ -51,7 +54,7 @@ class Query(private val db: SQLiteDatabase, private val table: String,
      */
     fun asCursor(): Cursor =
             db.query(distinct, table, columns, where, null,
-                    buildGroupByClause(), null,
+                    buildGroupByClause(), having?.text,
                     buildOrderByClause(), buildLimitClause())
 
     private fun buildGroupByClause(): String? = groupBy?.let { columns ->

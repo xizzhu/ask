@@ -152,7 +152,8 @@ inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? =
  * @throws SQLException
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
-inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
+inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int,
+                                               nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**
@@ -197,4 +198,5 @@ fun SQLiteDatabase.deleteAll(table: String) {
  * @throws SQLException
  * @return The number of rows deleted.
  */
-inline fun SQLiteDatabase.delete(table: String, condition: ConditionBuilder.() -> Condition): Int = delete(table, buildSqlForWhere(condition(ConditionBuilder)), null)
+inline fun SQLiteDatabase.delete(table: String, condition: ConditionBuilder.() -> Condition): Int =
+        delete(table, buildSqlForWhere(condition(ConditionBuilder)), null)
