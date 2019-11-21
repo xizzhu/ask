@@ -49,6 +49,258 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testSelectWhereIsNull() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = 1L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to null)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE.isNull() }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereIsNotNull() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key1"
+            it[COLUMN_VALUE] = 1L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key2"
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE.isNotNull() }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereEq() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE eq 1L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereNeq() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE neq 1L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereLess() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE less 0L }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE less 2L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereLessEq() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE lessEq -1L }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE lessEq 2L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereGreater() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE greater 3L }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE greater 2L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereGreaterEq() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE greaterEq 4L }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE greaterEq 2L }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereBetween() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE.between(Long.MIN_VALUE, 0L) }.toList().isEmpty())
+        assertTrue(database.select(TABLE_NAME) { COLUMN_VALUE.between(4L, Long.MAX_VALUE) }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE.between(1L, 2L) }.toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_VALUE.between(Long.MIN_VALUE, Long.MAX_VALUE) }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereLike() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY like "%non_exist%" }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY like "%Y1" }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereNotLike() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY notLike "%non_exist%" }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereGlob() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY glob "*non_exist*" }.toList().isEmpty())
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY glob "*KEY*" }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY glob "*y1" }.toList()
+        )
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY glob "*key*" }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereIn() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY inList listOf("non_exist") }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY inList listOf("key1") }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereNotIn() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY notInList listOf("key2") }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereAnd() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 0L) }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY eq "key1" and (COLUMN_VALUE eq 1L) }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereOr() {
+        populateDatabase()
+
+        assertTrue(database.select(TABLE_NAME) { COLUMN_KEY eq "key" or (COLUMN_VALUE eq 0L) }.toList().isEmpty())
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY eq "key1" or (COLUMN_VALUE eq 0L) }.toList()
+        )
+    }
+
+    @Test
+    fun testSelectWhereNot() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { not(COLUMN_KEY eq "key1") }.toList()
+        )
+    }
+
+    @Test
     fun testSelectWithColumns() {
         populateDatabase()
 
