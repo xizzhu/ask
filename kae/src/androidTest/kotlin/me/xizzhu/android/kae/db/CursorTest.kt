@@ -17,6 +17,7 @@
 package me.xizzhu.android.kae.db
 
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
@@ -25,6 +26,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import me.xizzhu.android.kae.tests.BaseUnitTest
 import me.xizzhu.android.kae.tests.assertListEquals
 import me.xizzhu.android.kae.tests.assertMapEquals
+import org.junit.Assert.assertArrayEquals
 import kotlin.test.*
 
 class CursorTest : BaseUnitTest() {
@@ -64,11 +66,24 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
-    fun testAsIterable() {
+    fun testGetters() {
         prepareDatabase()
-        queryAll().use {
-            assertEquals(2, it.count)
-            it.asIterable().forEachIndexed { index, row -> assertEquals(index, row) }
+
+        database.select(TABLE_NAME).limit(1L).asCursor().use { cursor ->
+            cursor.moveToFirst()
+
+            assertEquals(Cursor.FIELD_TYPE_BLOB, cursor.getType(COLUMN_BLOB))
+            assertEquals(Cursor.FIELD_TYPE_FLOAT, cursor.getType(COLUMN_FLOAT))
+            assertEquals(Cursor.FIELD_TYPE_INTEGER, cursor.getType(COLUMN_INTEGER))
+            assertEquals(Cursor.FIELD_TYPE_STRING, cursor.getType(COLUMN_STRING))
+
+            assertArrayEquals(byteArrayOf(1, 2, 3), cursor.getBlob(COLUMN_BLOB))
+            assertEquals(4.56, cursor.getDouble(COLUMN_FLOAT))
+            assertEquals(4.56F, cursor.getFloat(COLUMN_FLOAT))
+            assertEquals(789, cursor.getInt(COLUMN_INTEGER))
+            assertEquals(789L, cursor.getLong(COLUMN_INTEGER))
+            assertEquals(789, cursor.getShort(COLUMN_INTEGER))
+            assertEquals("string", cursor.getString(COLUMN_STRING))
         }
     }
 
@@ -84,6 +99,15 @@ class CursorTest : BaseUnitTest() {
             it[COLUMN_FLOAT] = null
             it[COLUMN_INTEGER] = null
             it[COLUMN_STRING] = null
+        }
+    }
+
+    @Test
+    fun testAsIterable() {
+        prepareDatabase()
+        queryAll().use {
+            assertEquals(2, it.count)
+            it.asIterable().forEachIndexed { index, row -> assertEquals(index, row) }
         }
     }
 

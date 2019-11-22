@@ -20,6 +20,22 @@ import android.database.Cursor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+fun Cursor.getType(column: String): Int = getType(getColumnIndexOrThrow(column))
+
+fun Cursor.getBlob(column: String): ByteArray = getBlob(getColumnIndexOrThrow(column))
+
+fun Cursor.getDouble(column: String): Double = getDouble(getColumnIndexOrThrow(column))
+
+fun Cursor.getFloat(column: String): Float = getFloat(getColumnIndexOrThrow(column))
+
+fun Cursor.getInt(column: String): Int = getInt(getColumnIndexOrThrow(column))
+
+fun Cursor.getLong(column: String): Long = getLong(getColumnIndexOrThrow(column))
+
+fun Cursor.getShort(column: String): Short = getShort(getColumnIndexOrThrow(column))
+
+fun Cursor.getString(column: String): String = getString(getColumnIndexOrThrow(column))
+
 /**
  * Create a [Iterable] that returns all the data from the [Cursor].
  *
