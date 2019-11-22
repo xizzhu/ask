@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package me.xizzhu.android.kae.utils
+package me.xizzhu.android.kae.db
 
-inline fun <K, V> Map<out K, V>.forEachIndexed(action: (Int, Map.Entry<K, V>) -> Unit) {
-    var index = 0
-    for (element in this) action(index++, element)
-}
+fun avg(column: String, distinct: Boolean = false): String = "AVG(${if (distinct) "DISTINCT " else ""}$column)"
+
+fun count(column: String, distinct: Boolean = false): String = "COUNT(${if (distinct) "DISTINCT " else ""}$column)"
+
+fun min(column: String): String = "MIN($column)"
+
+fun max(column: String): String = "MAX($column)"
+
+fun sum(column: String, distinct: Boolean = false): String = "SUM(${if (distinct) "DISTINCT " else ""}$column)"

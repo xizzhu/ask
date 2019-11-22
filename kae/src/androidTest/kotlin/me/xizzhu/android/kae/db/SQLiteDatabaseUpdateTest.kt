@@ -296,13 +296,13 @@ class SQLiteDatabaseUpdateTest : BaseSQLiteDatabaseTest() {
 
         assertEquals(0, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 1234L }) { COLUMN_KEY inList listOf("non_exist") })
 
-        assertEquals(1, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 1234L }) { COLUMN_KEY inList listOf("key1") })
+        assertEquals(2, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 1234L }) { COLUMN_KEY inList listOf("key1", "key3", "non_exist") })
         selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1234L),
                             mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                            mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 1234L)
                     ),
                     it.asSequence().toList()
             )
@@ -313,12 +313,12 @@ class SQLiteDatabaseUpdateTest : BaseSQLiteDatabaseTest() {
     fun testUpdateWhereNotIn() {
         populateDatabase()
 
-        assertEquals(2, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 4321L }) { COLUMN_KEY notInList listOf("key1") })
+        assertEquals(1, database.update(TABLE_NAME, { it[COLUMN_VALUE] = 4321L }) { COLUMN_KEY notInList listOf("key1", "key2") })
         selectAll().use {
             assertListEquals(
                     listOf(
                             mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 4321L),
+                            mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
                             mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 4321L)
                     ),
                     it.asSequence().toList()

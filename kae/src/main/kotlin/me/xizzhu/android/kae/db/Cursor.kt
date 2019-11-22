@@ -38,6 +38,25 @@ fun Cursor.asIterable(): Iterable<Map<String, Any?>> = Iterable {
 }
 
 /**
+ * @internal
+ */
+fun Cursor.getRow(): Map<String, Any?> = hashMapOf<String, Any?>().apply {
+    (0 until columnCount).forEach { index ->
+        put(
+                getColumnName(index),
+                when (getType(index)) {
+                    Cursor.FIELD_TYPE_BLOB -> getBlob(index)
+                    Cursor.FIELD_TYPE_FLOAT -> getDouble(index)
+                    Cursor.FIELD_TYPE_INTEGER -> getLong(index)
+                    Cursor.FIELD_TYPE_NULL -> null
+                    Cursor.FIELD_TYPE_STRING -> getString(index)
+                    else -> null
+                }
+        )
+    }
+}
+
+/**
  * Create a [Sequence] that returns all the data from the [Cursor].
  *
  * Each element in the sequence represents one row from the cursor as a [Map]. The key is the column
@@ -55,18 +74,36 @@ fun Cursor.asSequence(): Sequence<Map<String, Any?>> = generateSequence {
  */
 fun Cursor.asFlow(): Flow<Map<String, Any?>> = flow { while (moveToNext()) emit(getRow()) }
 
-private fun Cursor.getRow(): Map<String, Any?> = hashMapOf<String, Any?>().apply {
-    (0 until columnCount).forEach { index ->
-        put(
-                getColumnName(index),
-                when (getType(index)) {
-                    Cursor.FIELD_TYPE_BLOB -> getBlob(index)
-                    Cursor.FIELD_TYPE_FLOAT -> getDouble(index)
-                    Cursor.FIELD_TYPE_INTEGER -> getLong(index)
-                    Cursor.FIELD_TYPE_NULL -> null
-                    Cursor.FIELD_TYPE_STRING -> getString(index)
-                    else -> null
-                }
-        )
+/**
+ * Perform the given [action] on all data from the [Cursor].
+ *
+ * Each element represents one row from the cursor as a [Map]. The key is the column name, and the
+ * value is the value of the column.
+ */
+inline fun Cursor.forEach(action: (Map<String, Any?>) -> Unit) = use {
+    while (moveToNext()) action(getRow())
+}
+
+/**
+ * Perform the given [action] on all data from the [Cursor].
+ *
+ * Each element represents one row from the cursor as a [Map]. The key is the column name, and the
+ * value is the value of the column.
+ */
+inline fun Cursor.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = use {
+    var index = 0
+    while (moveToNext()) action(index++, getRow())
+}
+
+/**
+ * Create a [List] that contains all the data from the [Cursor], and close the cursor.
+ *
+ * Each element in the list represents one row from the cursor as a [Map]. The key is the column
+ * name, and the value is the value of the column.
+ */
+fun Cursor.toList(): List<Map<String, Any?>> = ArrayList<Map<String, Any?>>().apply {
+    this@toList.use { cursor ->
+        ensureCapacity(cursor.count)
+        while (cursor.moveToNext()) add(cursor.getRow())
     }
 }

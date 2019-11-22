@@ -23,7 +23,8 @@ import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.test.runBlockingTest
 import me.xizzhu.android.kae.tests.BaseUnitTest
-import org.junit.Assert.assertArrayEquals
+import me.xizzhu.android.kae.tests.assertListEquals
+import me.xizzhu.android.kae.tests.assertMapEquals
 import kotlin.test.*
 
 class CursorTest : BaseUnitTest() {
@@ -38,11 +39,7 @@ class CursorTest : BaseUnitTest() {
 
     private class DatabaseOpenHelper : SQLiteOpenHelper(ApplicationProvider.getApplicationContext(), DB_NAME, null, 1) {
         override fun onCreate(db: SQLiteDatabase) {
-            try {
-                db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_BLOB BLOB, $COLUMN_FLOAT REAL, $COLUMN_INTEGER INTEGER, $COLUMN_STRING TEXT);")
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            db.execSQL("CREATE TABLE $TABLE_NAME ($COLUMN_BLOB BLOB, $COLUMN_FLOAT REAL, $COLUMN_INTEGER INTEGER, $COLUMN_STRING TEXT);")
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -95,18 +92,26 @@ class CursorTest : BaseUnitTest() {
     private fun assertEquals(index: Int, row: Map<String, Any?>) {
         when (index) {
             0 -> {
-                assertEquals(4, row.count())
-                assertArrayEquals(byteArrayOf(1, 2, 3), row[COLUMN_BLOB] as ByteArray)
-                assertEquals(4.56, row[COLUMN_FLOAT])
-                assertEquals(789L, row[COLUMN_INTEGER])
-                assertEquals("string", row[COLUMN_STRING])
+                assertMapEquals(
+                        mapOf(
+                                Pair(COLUMN_BLOB, byteArrayOf(1, 2, 3)),
+                                Pair(COLUMN_FLOAT, 4.56),
+                                Pair(COLUMN_INTEGER, 789L),
+                                Pair(COLUMN_STRING, "string")
+                        ),
+                        row
+                )
             }
             1 -> {
-                assertEquals(4, row.count())
-                assertNull(row[COLUMN_BLOB])
-                assertNull(row[COLUMN_FLOAT])
-                assertNull(row[COLUMN_INTEGER])
-                assertNull(row[COLUMN_STRING])
+                assertMapEquals(
+                        mapOf(
+                                Pair(COLUMN_BLOB, null),
+                                Pair(COLUMN_FLOAT, null),
+                                Pair(COLUMN_INTEGER, null),
+                                Pair(COLUMN_STRING, null)
+                        ),
+                        row
+                )
             }
             else -> fail()
         }
@@ -128,5 +133,42 @@ class CursorTest : BaseUnitTest() {
             assertEquals(2, it.count)
             it.asFlow().collectIndexed { index, row -> assertEquals(index, row) }
         }
+    }
+
+    @Test
+    fun testForEach() {
+        prepareDatabase()
+
+        var index = 0
+        queryAll().forEach { row -> assertEquals(index++, row) }
+    }
+
+    @Test
+    fun testForEachIndexed() {
+        prepareDatabase()
+        queryAll().forEachIndexed { index, row -> assertEquals(index, row) }
+    }
+
+    @Test
+    fun testToList() {
+        prepareDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(
+                                Pair(COLUMN_BLOB, byteArrayOf(1, 2, 3)),
+                                Pair(COLUMN_FLOAT, 4.56),
+                                Pair(COLUMN_INTEGER, 789L),
+                                Pair(COLUMN_STRING, "string")
+                        ),
+                        mapOf(
+                                Pair(COLUMN_BLOB, null),
+                                Pair(COLUMN_FLOAT, null),
+                                Pair(COLUMN_INTEGER, null),
+                                Pair(COLUMN_STRING, null)
+                        )
+                ),
+                queryAll().toList()
+        )
     }
 }
