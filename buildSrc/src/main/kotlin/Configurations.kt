@@ -37,8 +37,7 @@ object Versions {
     val java = JavaVersion.VERSION_1_8
 
     object Kotlin {
-        const val classpath = "1.3.50"
-        const val core = "1.3.50"
+        const val core = "1.3.60"
         const val coroutines = "1.3.2"
     }
 
@@ -60,7 +59,7 @@ object Dependencies {
     }
 
     object Kotlin {
-        const val classpath = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.classpath}"
+        const val classpath = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.core}"
         const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.Kotlin.core}"
         const val coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.Kotlin.coroutines}"
         const val test = "org.jetbrains.kotlin:kotlin-test-junit:${Versions.Kotlin.core}"
