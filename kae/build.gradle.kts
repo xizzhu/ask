@@ -71,6 +71,9 @@ dependencies {
     implementation(Dependencies.Kotlin.stdlib)
     implementation(Dependencies.Kotlin.coroutinesAndroid)
 
+    implementation(Dependencies.AndroidX.annotation)
+    implementation(Dependencies.AndroidX.fragment)
+
     androidTestImplementation(Dependencies.Kotlin.test)
     androidTestImplementation(Dependencies.Kotlin.coroutinesTest)
     androidTestImplementation(Dependencies.AndroidX.Test.junit)
