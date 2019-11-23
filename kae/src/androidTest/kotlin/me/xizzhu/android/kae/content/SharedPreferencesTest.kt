@@ -19,10 +19,22 @@ package me.xizzhu.android.kae.content
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import me.xizzhu.android.kae.tests.BaseUnitTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SharedPreferencesTest : BaseUnitTest() {
+    @BeforeTest
+    override fun setup() {
+        super.setup()
+
+        ApplicationProvider.getApplicationContext<Context>()
+                .getSharedPreferences("test_shared_pref", Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply()
+    }
+
     @Test
     fun testEdit() {
         ApplicationProvider.getApplicationContext<Context>()
