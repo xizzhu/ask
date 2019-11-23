@@ -184,4 +184,39 @@ class SQLiteDatabaseTest : BaseSQLiteDatabaseTest() {
 
         selectAll().use { assertEquals(0, it.count) }
     }
+
+    @Test
+    fun testWithTransaction() {
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.withTransaction { selectAll().toList() }
+        )
+    }
+
+    @Test
+    fun testWithTransactionWithException() {
+        populateDatabase()
+
+        assertFailsWith(RuntimeException::class) {
+            database.withTransaction {
+                deleteAll(TABLE_NAME)
+                throw RuntimeException()
+            }
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                selectAll().toList()
+        )
+    }
 }

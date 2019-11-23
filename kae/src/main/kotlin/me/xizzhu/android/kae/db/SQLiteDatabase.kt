@@ -130,6 +130,26 @@ inline fun SQLiteDatabase.transaction(exclusive: Boolean = true, block: SQLiteDa
 }
 
 /**
+ * Run [block] in a transaction and return the result.
+ *
+ * Due to limitation that transactions are thread confined, SQLite accessing code inside the [block]
+ * can only run in the current thread.
+ *
+ * @param exclusive Run the transaction in EXCLUSIVE mode if true, or IMMEDIATE mode otherwise.
+ */
+inline fun <T> SQLiteDatabase.withTransaction(exclusive: Boolean = true, block: SQLiteDatabase.() -> T): T {
+    if (exclusive) beginTransaction() else beginTransactionNonExclusive()
+
+    try {
+        val result = block()
+        setTransactionSuccessful()
+        return result
+    } finally {
+        endTransaction()
+    }
+}
+
+/**
  * Insert values provided through [block] as a row into the [table].
  *
  * @return Row ID of the newly inserted row, or -1 upon failure.
