@@ -18,95 +18,8 @@ package me.xizzhu.android.kae.db
 
 import android.database.sqlite.SQLiteDatabase
 import me.xizzhu.android.kae.content.toContentValues
-import me.xizzhu.android.kae.utils.forEachIndexed
 
 class TransactionAbortedException : RuntimeException()
-
-/**
- * @return True if the [table] exists, or false otherwise.
- */
-fun SQLiteDatabase.hasTable(table: String): Boolean =
-        rawQuery("SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name = '$table';", null).use {
-            it.count > 0
-        }
-
-/**
- * Create a [table] with columns described in [block].
- *
- * @param ifNotExists If true, suppress the error in case the [table] already exists.
- */
-inline fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
-    execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
-}
-
-/**
- * @internal
- */
-fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
-    val sqlBuilder = StringBuilder("CREATE TABLE")
-    if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
-    sqlBuilder.append(' ').append(table)
-
-    sqlBuilder.append(" (")
-
-    val primaryKeys = arrayListOf<String>()
-    var primaryKeyConflictClause: ConflictClause? = null
-    val foreignKeys = hashMapOf<String, ForeignKey>()
-    columnDefinitions.forEachIndexed { index, (columnName, modifiers) ->
-        if (index > 0) sqlBuilder.append(", ")
-        sqlBuilder.append(columnName)
-
-        modifiers.modifiers.forEach { modifier ->
-            when (modifier) {
-                is PrimaryKey -> {
-                    primaryKeys.add(columnName)
-                    if (primaryKeyConflictClause == null) primaryKeyConflictClause = modifier.conflictClause
-                }
-                is ForeignKey -> {
-                    foreignKeys[columnName] = modifier
-                }
-                else -> {
-                    sqlBuilder.append(' ').append(modifier.text)
-                }
-            }
-        }
-    }
-    if (primaryKeys.isNotEmpty()) {
-        sqlBuilder.append(", PRIMARY KEY(")
-        primaryKeys.forEachIndexed { index, primaryKey ->
-            if (index > 0) sqlBuilder.append(", ")
-            sqlBuilder.append(primaryKey)
-        }
-        sqlBuilder.append(')')
-        primaryKeyConflictClause?.let { sqlBuilder.append(' ').append(it.text) }
-    }
-    foreignKeys.forEach { (columnName, foreignKey) ->
-        sqlBuilder.append(", FOREIGN KEY(")
-                .append(columnName)
-                .append(") REFERENCES ")
-                .append(foreignKey.referenceTable)
-                .append('(')
-                .append(foreignKey.referenceColumn)
-                .append(')')
-
-        foreignKey.constraints.forEach { constraint ->
-            sqlBuilder.append(' ').append(constraint.text)
-        }
-    }
-
-    sqlBuilder.append(");")
-
-    return sqlBuilder.toString()
-}
-
-/**
- * Remove the [table].
- *
- * @param ifExists If true, suppress the error in case the [table] does not exist.
- */
-fun SQLiteDatabase.dropTable(table: String, ifExists: Boolean = true) {
-    execSQL("DROP TABLE ${if (ifExists) "IF EXISTS" else ""} $table;")
-}
 
 /**
  * Run [block] in a transaction. To abort the transaction, simply throw a [TransactionAbortedException].
@@ -147,6 +60,32 @@ inline fun <T> SQLiteDatabase.withTransaction(exclusive: Boolean = true, block: 
     } finally {
         endTransaction()
     }
+}
+
+/**
+ * @return True if the [table] exists, or false otherwise.
+ */
+fun SQLiteDatabase.hasTable(table: String): Boolean =
+        rawQuery("SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name = '$table';", null).use {
+            it.count > 0
+        }
+
+/**
+ * Create a [table] with columns described in [block].
+ *
+ * @param ifNotExists If true, suppress the error in case the [table] already exists.
+ */
+inline fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
+    execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
+}
+
+/**
+ * Remove the [table].
+ *
+ * @param ifExists If true, suppress the error in case the [table] does not exist.
+ */
+fun SQLiteDatabase.dropTable(table: String, ifExists: Boolean = true) {
+    execSQL("DROP TABLE ${if (ifExists) "IF EXISTS" else ""} $table;")
 }
 
 /**
@@ -197,11 +136,6 @@ inline fun SQLiteDatabase.update(table: String, values: (MutableMap<String, Any?
                                  condition: ConditionBuilder.() -> Condition): Int =
         updateWithOnConflict(table, hashMapOf<String, Any?>().apply(values).toContentValues(),
                 buildSqlForWhere(condition(ConditionBuilder)), null, conflictAlgorithm)
-
-/**
- * @internal
- */
-fun buildSqlForWhere(condition: Condition): String = condition.text
 
 /**
  * Delete all values from [table].
