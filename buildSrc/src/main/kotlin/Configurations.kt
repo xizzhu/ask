@@ -26,6 +26,10 @@ object Versions {
         const val classpath = "2.8.3"
     }
 
+    object AndroidMaven {
+        const val classpath = "2.1"
+    }
+
     object Sdk {
         const val classpath = "3.5.2"
         const val buildTools = "29.0.2"
@@ -59,6 +63,10 @@ object Dependencies {
 
     object Coveralls {
         const val classpath = "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${Versions.Coveralls.classpath}"
+    }
+
+    object AndroidMaven {
+        const val classpath = "com.github.dcendents:android-maven-gradle-plugin:${Versions.AndroidMaven.classpath}"
     }
 
     object Kotlin {

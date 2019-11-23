@@ -24,6 +24,7 @@ buildscript {
         classpath(Dependencies.Sdk.classpath)
         classpath(Dependencies.Kotlin.classpath)
         classpath(Dependencies.Coveralls.classpath)
+        classpath(Dependencies.AndroidMaven.classpath)
     }
 }
 

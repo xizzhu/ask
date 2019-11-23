@@ -16,6 +16,7 @@
 
 plugins {
     id("com.android.library")
+    id("com.github.dcendents.android-maven")
     kotlin("android")
 }
 apply("$rootDir/scripts/coverage.gradle.kts")
