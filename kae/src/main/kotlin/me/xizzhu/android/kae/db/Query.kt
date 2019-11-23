@@ -108,6 +108,13 @@ inline fun Query.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = asCu
 fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()
 
 /**
+ * Execute the query and return a [List] containing each row from the query.
+ */
+inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCursor().use { cursor ->
+    ArrayList<T>(cursor.count).apply { while (cursor.moveToNext()) add(converter(cursor.getRow())) }
+}
+
+/**
  * Execute the query and return first row from the query.
  *
  * @throws [SQLiteException]
