@@ -17,7 +17,9 @@
 package me.xizzhu.android.kae.db
 
 import android.database.Cursor
+import android.database.CursorIndexOutOfBoundsException
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 
 enum class SortOrder(internal val text: String) {
     ASCENDING("ASC"),
@@ -104,3 +106,17 @@ inline fun Query.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = asCu
  * Execute the query and return a [List] containing each row from the query.
  */
 fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()
+
+/**
+ * Execute the query and return first row from the query.
+ *
+ * @throws [SQLiteException]
+ */
+fun Query.first(): Map<String, Any?> = asCursor().use {
+    it.moveToFirst()
+    try {
+        it.getRow()
+    } catch (e: CursorIndexOutOfBoundsException) {
+        throw SQLiteException("Failed to get first row", e)
+    }
+}
