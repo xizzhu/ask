@@ -543,7 +543,22 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
         assertFailsWith(SQLiteException::class) { database.select(TABLE_NAME).first() }
 
         populateDatabase()
-
         assertMapEquals(mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L), database.select(TABLE_NAME).first())
+    }
+
+    @Test
+    fun testFirstOrDefault() {
+        assertTrue(database.select(TABLE_NAME).firstOrDefault(emptyMap()).isEmpty())
+        assertTrue(database.select(TABLE_NAME).firstOrDefault { emptyMap() }.isEmpty())
+
+        populateDatabase()
+        assertMapEquals(
+                mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                database.select(TABLE_NAME).firstOrDefault(emptyMap())
+        )
+        assertMapEquals(
+                mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                database.select(TABLE_NAME).firstOrDefault { emptyMap() }
+        )
     }
 }

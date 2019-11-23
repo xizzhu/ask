@@ -120,3 +120,17 @@ fun Query.first(): Map<String, Any?> = asCursor().use {
         throw SQLiteException("Failed to get first row", e)
     }
 }
+
+/**
+ * Execute the query and return first row from the query.
+ */
+fun Query.firstOrDefault(defaultValue: Map<String, Any?>): Map<String, Any?> = asCursor().use {
+    if (it.moveToFirst()) it.getRow() else defaultValue
+}
+
+/**
+ * Execute the query and return first row from the query.
+ */
+inline fun Query.firstOrDefault(defaultValue: () -> Map<String, Any?>): Map<String, Any?> = asCursor().use {
+    if (it.moveToFirst()) it.getRow() else defaultValue()
+}
