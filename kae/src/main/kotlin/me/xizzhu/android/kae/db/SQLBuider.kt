@@ -22,9 +22,9 @@ import me.xizzhu.android.kae.utils.forEachIndexed
  * @internal
  */
 fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefinitions: Map<String, ColumnModifiers>): String {
-    val sqlBuilder = StringBuilder("CREATE TABLE")
-    if (ifNotExists) sqlBuilder.append(" IF NOT EXISTS")
-    sqlBuilder.append(' ').append(table)
+    val sqlBuilder = StringBuilder("CREATE TABLE ")
+    if (ifNotExists) sqlBuilder.append("IF NOT EXISTS ")
+    sqlBuilder.append(table)
 
     sqlBuilder.append(" (")
 
@@ -76,6 +76,26 @@ fun buildSqlForCreatingTable(table: String, ifNotExists: Boolean, columnDefiniti
     sqlBuilder.append(");")
 
     return sqlBuilder.toString()
+}
+
+/**
+ * @internal
+ */
+fun buildSqlForCreatingIndex(index: String, table: String, columns: Array<out String>, ifNotExists: Boolean)
+        : String = StringBuilder().run {
+    append("CREATE INDEX ")
+    if (ifNotExists) append("IF NOT EXISTS ")
+    append(index)
+    append(" ON ")
+    append(table)
+    append(" (")
+    columns.forEachIndexed { index, column ->
+        if (index > 0) append(", ")
+        append(column)
+    }
+    append(");")
+
+    toString()
 }
 
 /**

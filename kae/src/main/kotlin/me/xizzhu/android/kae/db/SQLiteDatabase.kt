@@ -74,6 +74,7 @@ fun SQLiteDatabase.hasTable(table: String): Boolean =
  * Create a [table] with columns described in [block].
  *
  * @param ifNotExists If true, suppress the error in case the [table] already exists.
+ * @throws SQLException
  */
 inline fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true, block: (MutableMap<String, ColumnModifiers>) -> Unit) {
     execSQL(buildSqlForCreatingTable(table, ifNotExists, hashMapOf<String, ColumnModifiers>().apply(block)))
@@ -83,15 +84,27 @@ inline fun SQLiteDatabase.createTable(table: String, ifNotExists: Boolean = true
  * Remove the [table].
  *
  * @param ifExists If true, suppress the error in case the [table] does not exist.
+ * @throws SQLException
  */
 fun SQLiteDatabase.dropTable(table: String, ifExists: Boolean = true) {
     execSQL("DROP TABLE ${if (ifExists) "IF EXISTS" else ""} $table;")
 }
 
 /**
+ * Create an [index] with [columns] of the [table].
+ *
+ * @param ifNotExists If true, suppress the error in case the [index] already exists.
+ * @throws SQLException
+ */
+fun SQLiteDatabase.createIndex(index: String, table: String, vararg columns: String, ifNotExists: Boolean = true) {
+    execSQL(buildSqlForCreatingIndex(index, table, columns, ifNotExists))
+}
+
+/**
  * Remove the [index].
  *
  * @param ifExists If true, suppress the error in case the [index] does not exist.
+ * @throws SQLException
  */
 fun SQLiteDatabase.dropIndex(index: String, ifExists: Boolean = true) {
     execSQL("DROP INDEX ${if (ifExists) "IF EXISTS" else ""} $index;")

@@ -2,6 +2,7 @@ CHANGELOG
 ---------
 
 #### Next Release
+- Added SQLiteDatabase.createIndex()
 - Added SQLiteDatabase.dropIndex()
 - Added Query.first()
 - Added Query.firstOrDefault()

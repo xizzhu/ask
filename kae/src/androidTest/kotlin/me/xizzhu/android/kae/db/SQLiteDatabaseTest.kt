@@ -141,6 +141,14 @@ class SQLiteDatabaseTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testCreateIndex() {
+        database.createIndex("testIndex1", TABLE_NAME, COLUMN_KEY)
+        database.createIndex("testIndex2", TABLE_NAME, COLUMN_KEY, COLUMN_VALUE)
+        database.createIndex("testIndex3", TABLE_NAME, COLUMN_KEY, ifNotExists = false)
+        database.createIndex("testIndex4", TABLE_NAME, COLUMN_KEY, COLUMN_VALUE, ifNotExists = false)
+    }
+
+    @Test
     fun testDropNonExistIndex() {
         database.dropIndex("nonExist")
         assertFailsWith(SQLiteException::class) { database.dropIndex("nonExist", false) }
