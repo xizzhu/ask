@@ -110,9 +110,7 @@ fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()
 /**
  * Execute the query and return a [List] of items created from each row of the query using [converter].
  */
-inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCursor().use { cursor ->
-    ArrayList<T>(cursor.count).apply { while (cursor.moveToNext()) add(converter(cursor.getRow())) }
-}
+inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCursor().toList(converter)
 
 /**
  * Execute the query and return first row from the query.

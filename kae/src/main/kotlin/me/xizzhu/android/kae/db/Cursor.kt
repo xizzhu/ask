@@ -117,9 +117,16 @@ inline fun Cursor.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = use
  * Each element in the list represents one row from the cursor as a [Map]. The key is the column
  * name, and the value is the value of the column.
  */
-fun Cursor.toList(): List<Map<String, Any?>> = ArrayList<Map<String, Any?>>().apply {
-    this@toList.use { cursor ->
+fun Cursor.toList(): List<Map<String, Any?>> = use { cursor ->
+    ArrayList<Map<String, Any?>>().apply {
         ensureCapacity(cursor.count)
         while (cursor.moveToNext()) add(cursor.getRow())
     }
+}
+
+/**
+ * Create a [List] of items created from each row of the [Cursor] using [converter], and close the cursor.
+ */
+inline fun <T> Cursor.toList(converter: (Map<String, Any?>) -> T): List<T> = use {
+    ArrayList<T>(count).apply { while (moveToNext()) add(converter(getRow())) }
 }

@@ -194,5 +194,13 @@ class CursorTest : BaseUnitTest() {
                 ),
                 queryAll().toList()
         )
+
+        assertListEquals(
+                listOf(
+                        "string" to 789L,
+                        null to null
+                ),
+                queryAll().toList { (it[COLUMN_STRING] as String?) to (it[COLUMN_INTEGER] as Long?) }
+        )
     }
 }
