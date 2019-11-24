@@ -141,6 +141,12 @@ class SQLiteDatabaseTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testDropNonExistIndex() {
+        database.dropIndex("nonExist")
+        assertFailsWith(SQLiteException::class) { database.dropIndex("nonExist", false) }
+    }
+
+    @Test
     fun testTransaction() {
         database.transaction {
             insert(TABLE_NAME) {

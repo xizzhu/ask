@@ -89,6 +89,15 @@ fun SQLiteDatabase.dropTable(table: String, ifExists: Boolean = true) {
 }
 
 /**
+ * Remove the [index].
+ *
+ * @param ifExists If true, suppress the error in case the [index] does not exist.
+ */
+fun SQLiteDatabase.dropIndex(index: String, ifExists: Boolean = true) {
+    execSQL("DROP INDEX ${if (ifExists) "IF EXISTS" else ""} $index;")
+}
+
+/**
  * Insert values provided through [block] as a row into the [table].
  *
  * @return Row ID of the newly inserted row, or -1 upon failure.
