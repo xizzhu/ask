@@ -17,7 +17,9 @@
 package me.xizzhu.android.kae.db
 
 import android.database.Cursor
+import android.database.CursorIndexOutOfBoundsException
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 
 enum class SortOrder(internal val text: String) {
     ASCENDING("ASC"),
@@ -104,3 +106,59 @@ inline fun Query.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = asCu
  * Execute the query and return a [List] containing each row from the query.
  */
 fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()
+
+/**
+ * Execute the query and return a [List] of items created from each row of the query using [converter].
+ */
+inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCursor().use { cursor ->
+    ArrayList<T>(cursor.count).apply { while (cursor.moveToNext()) add(converter(cursor.getRow())) }
+}
+
+/**
+ * Execute the query and return first row from the query.
+ *
+ * @throws [SQLiteException]
+ */
+fun Query.first(): Map<String, Any?> = asCursor().use { cursor ->
+    cursor.moveToFirst()
+    try {
+        cursor.getRow()
+    } catch (e: CursorIndexOutOfBoundsException) {
+        throw SQLiteException("Failed to get first row", e)
+    }
+}
+
+/**
+ * Execute the query and return an item created from first row of the query using [converter].
+ *
+ * @throws [SQLiteException]
+ */
+inline fun <T> Query.first(converter: (Map<String, Any?>) -> T): T = converter(first())
+
+/**
+ * Execute the query and return first row from the query.
+ */
+fun Query.firstOrDefault(defaultValue: Map<String, Any?>): Map<String, Any?> = asCursor().use {
+    if (it.moveToFirst()) it.getRow() else defaultValue
+}
+
+/**
+ * Execute the query and return an item created from first row of the query using [converter].
+ */
+inline fun <T> Query.firstOrDefault(defaultValue: T, converter: (Map<String, Any?>) -> T): T = asCursor().use {
+    if (it.moveToFirst()) converter(it.getRow()) else defaultValue
+}
+
+/**
+ * Execute the query and return first row from the query.
+ */
+inline fun Query.firstOrDefault(defaultValue: () -> Map<String, Any?>): Map<String, Any?> = asCursor().use {
+    if (it.moveToFirst()) it.getRow() else defaultValue()
+}
+
+/**
+ * Execute the query and return an item created from first row of the query using [converter].
+ */
+inline fun <T> Query.firstOrDefault(defaultValue: () -> T, converter: (Map<String, Any?>) -> T): T = asCursor().use {
+    if (it.moveToFirst()) converter(it.getRow()) else defaultValue()
+}

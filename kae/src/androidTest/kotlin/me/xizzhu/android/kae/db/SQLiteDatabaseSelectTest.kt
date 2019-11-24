@@ -30,25 +30,6 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
-    fun testSelectEmptyTable() {
-        assertTrue(database.select(TABLE_NAME).toList().isEmpty())
-    }
-
-    @Test
-    fun testSelectAll() {
-        populateDatabase()
-
-        assertListEquals(
-                listOf(
-                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                ),
-                database.select(TABLE_NAME).toList()
-        )
-    }
-
-    @Test
     fun testSelectWhereIsNull() {
         database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
@@ -502,16 +483,9 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
 
     @Test
     fun testForEach() {
-        populateDatabase()
+        database.select(TABLE_NAME).forEach { fail() }
 
-        assertListEquals(
-                listOf(
-                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
-                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
-                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
-                ),
-                database.select(TABLE_NAME).toList()
-        )
+        populateDatabase()
 
         var index = 0
         database.select(TABLE_NAME).forEach { row ->
@@ -526,6 +500,8 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
 
     @Test
     fun testForEachIndexed() {
+        database.select(TABLE_NAME).forEachIndexed { _, _ -> fail() }
+
         populateDatabase()
 
         database.select(TABLE_NAME).forEachIndexed { index, row ->
@@ -536,5 +512,69 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
                 else -> fail()
             }
         }
+    }
+
+    @Test
+    fun testToList() {
+        assertTrue(database.select(TABLE_NAME).toList().isEmpty())
+        assertTrue(database.select(TABLE_NAME).toList { fail() }.isEmpty())
+
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME).toList()
+        )
+        assertListEquals(
+                listOf(
+                        "key1" to 1L,
+                        "key2" to 2L,
+                        "key3" to 3L
+                ),
+                database.select(TABLE_NAME).toList { (it[COLUMN_KEY] as String) to (it[COLUMN_VALUE] as Long) }
+        )
+    }
+
+    @Test
+    fun testFirst() {
+        assertFailsWith(SQLiteException::class) { database.select(TABLE_NAME).first() }
+
+        populateDatabase()
+
+        assertMapEquals(mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L), database.select(TABLE_NAME).first())
+        assertEquals(
+                "key1" to 1L,
+                database.select(TABLE_NAME).first { (it[COLUMN_KEY] as String) to (it[COLUMN_VALUE] as Long) }
+        )
+    }
+
+    @Test
+    fun testFirstOrDefault() {
+        assertTrue(database.select(TABLE_NAME).firstOrDefault(emptyMap()).isEmpty())
+        assertTrue(database.select(TABLE_NAME).firstOrDefault { emptyMap() }.isEmpty())
+
+        populateDatabase()
+
+        assertMapEquals(
+                mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                database.select(TABLE_NAME).firstOrDefault(emptyMap())
+        )
+        assertEquals(
+                "key1" to 1L,
+                database.select(TABLE_NAME).firstOrDefault("" to 0L) { (it[COLUMN_KEY] as String) to (it[COLUMN_VALUE] as Long) }
+        )
+
+        assertMapEquals(
+                mapOf(COLUMN_KEY to "key1", COLUMN_VALUE to 1L),
+                database.select(TABLE_NAME).firstOrDefault { emptyMap() }
+        )
+        assertEquals(
+                "key1" to 1L,
+                database.select(TABLE_NAME).firstOrDefault({ "" to 0L }) { (it[COLUMN_KEY] as String) to (it[COLUMN_VALUE] as Long) }
+        )
     }
 }
