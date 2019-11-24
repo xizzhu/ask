@@ -117,13 +117,10 @@ inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCu
  *
  * @throws [SQLiteException]
  */
-fun Query.first(): Map<String, Any?> = asCursor().use { cursor ->
-    cursor.moveToFirst()
-    try {
-        cursor.getRow()
-    } catch (e: CursorIndexOutOfBoundsException) {
-        throw SQLiteException("Failed to get first row", e)
-    }
+fun Query.first(): Map<String, Any?> = try {
+    asCursor().first()
+} catch (e: CursorIndexOutOfBoundsException) {
+    throw SQLiteException("Failed to get first row", e)
 }
 
 /**
@@ -136,27 +133,19 @@ inline fun <T> Query.first(converter: (Map<String, Any?>) -> T): T = converter(f
 /**
  * Execute the query and return first row from the query.
  */
-fun Query.firstOrDefault(defaultValue: Map<String, Any?>): Map<String, Any?> = asCursor().use {
-    if (it.moveToFirst()) it.getRow() else defaultValue
-}
+fun Query.firstOrDefault(defaultValue: Map<String, Any?>): Map<String, Any?> = asCursor().firstOrDefault(defaultValue)
 
 /**
  * Execute the query and return an item created from first row of the query using [converter].
  */
-inline fun <T> Query.firstOrDefault(defaultValue: T, converter: (Map<String, Any?>) -> T): T = asCursor().use {
-    if (it.moveToFirst()) converter(it.getRow()) else defaultValue
-}
+inline fun <T> Query.firstOrDefault(defaultValue: T, converter: (Map<String, Any?>) -> T): T = asCursor().firstOrDefault(defaultValue, converter)
 
 /**
  * Execute the query and return first row from the query.
  */
-inline fun Query.firstOrDefault(defaultValue: () -> Map<String, Any?>): Map<String, Any?> = asCursor().use {
-    if (it.moveToFirst()) it.getRow() else defaultValue()
-}
+inline fun Query.firstOrDefault(defaultValue: () -> Map<String, Any?>): Map<String, Any?> = asCursor().firstOrDefault(defaultValue)
 
 /**
  * Execute the query and return an item created from first row of the query using [converter].
  */
-inline fun <T> Query.firstOrDefault(defaultValue: () -> T, converter: (Map<String, Any?>) -> T): T = asCursor().use {
-    if (it.moveToFirst()) converter(it.getRow()) else defaultValue()
-}
+inline fun <T> Query.firstOrDefault(defaultValue: () -> T, converter: (Map<String, Any?>) -> T): T = asCursor().firstOrDefault(defaultValue, converter)

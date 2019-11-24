@@ -18,6 +18,7 @@ package me.xizzhu.android.kae.db
 
 import android.content.Context
 import android.database.Cursor
+import android.database.CursorIndexOutOfBoundsException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.test.core.app.ApplicationProvider
@@ -201,6 +202,63 @@ class CursorTest : BaseUnitTest() {
                         null to null
                 ),
                 queryAll().toList { (it[COLUMN_STRING] as String?) to (it[COLUMN_INTEGER] as Long?) }
+        )
+    }
+
+    @Test
+    fun testFirst() {
+        assertFailsWith(CursorIndexOutOfBoundsException::class) { queryAll().first() }
+
+        prepareDatabase()
+
+        assertMapEquals(
+                mapOf(
+                        Pair(COLUMN_BLOB, byteArrayOf(1, 2, 3)),
+                        Pair(COLUMN_FLOAT, 4.56),
+                        Pair(COLUMN_INTEGER, 789L),
+                        Pair(COLUMN_STRING, "string")
+                ),
+                queryAll().first()
+        )
+        assertEquals(
+                "string" to 789L,
+                queryAll().first { (it[COLUMN_STRING] as String) to (it[COLUMN_INTEGER] as Long) }
+        )
+    }
+
+    @Test
+    fun testFirstOrDefault() {
+        assertTrue(queryAll().firstOrDefault(emptyMap()).isEmpty())
+        assertTrue(queryAll().firstOrDefault { emptyMap() }.isEmpty())
+
+        prepareDatabase()
+
+        assertMapEquals(
+                mapOf(
+                        Pair(COLUMN_BLOB, byteArrayOf(1, 2, 3)),
+                        Pair(COLUMN_FLOAT, 4.56),
+                        Pair(COLUMN_INTEGER, 789L),
+                        Pair(COLUMN_STRING, "string")
+                ),
+                queryAll().firstOrDefault(emptyMap())
+        )
+        assertEquals(
+                "string" to 789L,
+                queryAll().firstOrDefault("" to 0L) { (it[COLUMN_STRING] as String) to (it[COLUMN_INTEGER] as Long) }
+        )
+
+        assertMapEquals(
+                mapOf(
+                        Pair(COLUMN_BLOB, byteArrayOf(1, 2, 3)),
+                        Pair(COLUMN_FLOAT, 4.56),
+                        Pair(COLUMN_INTEGER, 789L),
+                        Pair(COLUMN_STRING, "string")
+                ),
+                queryAll().firstOrDefault { emptyMap() }
+        )
+        assertEquals(
+                "string" to 789L,
+                queryAll().firstOrDefault({ "" to 0L }) { (it[COLUMN_STRING] as String) to (it[COLUMN_INTEGER] as Long) }
         )
     }
 }
