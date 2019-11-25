@@ -1,7 +1,7 @@
 CHANGELOG
 ---------
 
-#### Next Release
+#### v0.2.0 (2019-11-24)
 - Added SQLiteDatabase.createIndex()
 - Added SQLiteDatabase.dropIndex()
 - Added Query.first()
