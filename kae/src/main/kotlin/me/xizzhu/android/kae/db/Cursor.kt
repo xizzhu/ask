@@ -117,9 +117,66 @@ inline fun Cursor.forEachIndexed(action: (Int, Map<String, Any?>) -> Unit) = use
  * Each element in the list represents one row from the cursor as a [Map]. The key is the column
  * name, and the value is the value of the column.
  */
-fun Cursor.toList(): List<Map<String, Any?>> = ArrayList<Map<String, Any?>>().apply {
-    this@toList.use { cursor ->
-        ensureCapacity(cursor.count)
-        while (cursor.moveToNext()) add(cursor.getRow())
+fun Cursor.toList(): List<Map<String, Any?>> = use {
+    ArrayList<Map<String, Any?>>().apply {
+        ensureCapacity(count)
+        while (moveToNext()) add(getRow())
     }
+}
+
+/**
+ * Create a [List] of items created from each row of the [Cursor] using [converter], and close the cursor.
+ */
+inline fun <T> Cursor.toList(converter: (Map<String, Any?>) -> T): List<T> = use {
+    ArrayList<T>(count).apply { while (moveToNext()) add(converter(getRow())) }
+}
+
+/**
+ * Create a [Map] that contains data of first item from the [Cursor], and close the cursor.
+ *
+ * The key is the column name, and the value is the value of the column.
+ */
+fun Cursor.first(): Map<String, Any?> = use {
+    moveToFirst()
+    getRow()
+}
+
+/**
+ * Return an object of type [T] created from first item from the [Cursor] using [converter], and
+ * close the cursor.
+ */
+inline fun <T> Cursor.first(converter: (Map<String, Any?>) -> T): T = converter(first())
+
+/**
+ * Create a [Map] that contains data of first item from the [Cursor], and close the cursor.
+ *
+ * The key is the column name, and the value is the value of the column.
+ */
+fun Cursor.firstOrDefault(defaultValue: Map<String, Any?>): Map<String, Any?> = use {
+    if (moveToFirst()) getRow() else defaultValue
+}
+
+/**
+ * Return an object of type [T] created from first item from the [Cursor] using [converter], and
+ * close the cursor.
+ */
+inline fun <T> Cursor.firstOrDefault(defaultValue: T, converter: (Map<String, Any?>) -> T): T = use {
+    if (moveToFirst()) converter(getRow()) else defaultValue
+}
+
+/**
+ * Create a [Map] that contains data of first item from the [Cursor], and close the cursor.
+ *
+ * The key is the column name, and the value is the value of the column.
+ */
+inline fun Cursor.firstOrDefault(defaultValue: () -> Map<String, Any?>): Map<String, Any?> = use {
+    if (moveToFirst()) getRow() else defaultValue()
+}
+
+/**
+ * Return an object of type [T] created from first item from the [Cursor] using [converter], and
+ * close the cursor.
+ */
+inline fun <T> Cursor.firstOrDefault(defaultValue: () -> T, converter: (Map<String, Any?>) -> T): T = use {
+    if (moveToFirst()) converter(getRow()) else defaultValue()
 }

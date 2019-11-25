@@ -7,6 +7,9 @@ CHANGELOG
 - Added Query.first()
 - Added Query.firstOrDefault()
 - Added Query.toList(converter)
+- Added Cursor.toList(converter)
+- Added Cursor.first()
+- Added Cursor.firstOrDefault()
 
 #### v0.1.0 (2019-11-22)
 - Initial release
