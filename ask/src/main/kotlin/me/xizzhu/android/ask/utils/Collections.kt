@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-include(":ask")
+package me.xizzhu.android.ask.utils
+
+inline fun <K, V> Map<out K, V>.forEachIndexed(action: (Int, Map.Entry<K, V>) -> Unit) {
+    var index = 0
+    for (element in this) action(index++, element)
+}

@@ -18,7 +18,7 @@ import org.gradle.api.JavaVersion
 
 object Versions {
     object App {
-        const val code = 200
+        const val code = 100
         const val name: String = "${code / 10000}.${(code % 10000) / 100}.${code % 100}"
     }
 

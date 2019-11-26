@@ -14,4 +14,26 @@
  * limitations under the License.
  */
 
-include(":ask")
+package me.xizzhu.android.ask.tests
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+
+abstract class BaseUnitTest {
+    protected val testDispatcher = TestCoroutineDispatcher()
+
+    @BeforeTest
+    open fun setup() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @AfterTest
+    open fun tearDown() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
+    }
+}

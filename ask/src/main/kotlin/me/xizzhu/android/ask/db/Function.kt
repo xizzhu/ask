@@ -14,4 +14,14 @@
  * limitations under the License.
  */
 
-include(":ask")
+package me.xizzhu.android.ask.db
+
+fun avg(column: String, distinct: Boolean = false): String = "AVG(${if (distinct) "DISTINCT " else ""}$column)"
+
+fun count(column: String, distinct: Boolean = false): String = "COUNT(${if (distinct) "DISTINCT " else ""}$column)"
+
+fun min(column: String): String = "MIN($column)"
+
+fun max(column: String): String = "MAX($column)"
+
+fun sum(column: String, distinct: Boolean = false): String = "SUM(${if (distinct) "DISTINCT " else ""}$column)"

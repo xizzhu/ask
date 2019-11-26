@@ -1,13 +1,13 @@
-[![Build Status](https://img.shields.io/travis/xizzhu/kae.svg)](https://travis-ci.org/xizzhu/kae)
-[![Coverage Status](https://img.shields.io/coveralls/github/xizzhu/kae.svg)](https://coveralls.io/github/xizzhu/kae)
+[![Build Status](https://img.shields.io/travis/xizzhu/ask.svg)](https://travis-ci.org/xizzhu/ask)
+[![Coverage Status](https://img.shields.io/coveralls/github/xizzhu/ask.svg)](https://coveralls.io/github/xizzhu/ask)
 [![API](https://img.shields.io/badge/API-21%2B-green.svg?style=flat)](https://developer.android.com/about/versions/android-5.0.html)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
-[![JitPack](https://img.shields.io/jitpack/v/github/xizzhu/kae.svg)](https://jitpack.io/#xizzhu/kae)
+[![JitPack](https://img.shields.io/jitpack/v/github/xizzhu/ask.svg)](https://jitpack.io/#xizzhu/ask)
 
-Kotlin Android Extensions
-=========================
+Android SQLite KotlinExtensions
+===============================
 
-Yet another Kotlin library to make Android development easier.
+Some helpers to simplify working with SQLite database.
 
 License
 -------
