@@ -111,30 +111,13 @@ fun SQLiteDatabase.dropIndex(index: String, ifExists: Boolean = true) {
 }
 
 /**
- * Insert values provided through [block] as a row into the [table].
- *
- * @return Row ID of the newly inserted row, or -1 upon failure.
- */
-inline fun SQLiteDatabase.insert(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insert(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
-
-/**
- * Insert values provided through [block] as a row into the [table].
- *
- * @throws SQLException
- * @return Row ID of the newly inserted row, or -1 upon failure.
- */
-inline fun SQLiteDatabase.insertOrThrow(table: String, nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
-        insertOrThrow(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues())
-
-/**
  * Insert values provided through [block] as a row into the [table], using [conflictAlgorithm] to resolve conflicts.
  *
  * @throws SQLException
  * @return Row ID of the newly inserted row, or -1 upon failure.
  */
-inline fun SQLiteDatabase.insertWithOnConflict(table: String, conflictAlgorithm: Int,
-                                               nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
+inline fun SQLiteDatabase.insert(table: String, conflictAlgorithm: Int = SQLiteDatabase.CONFLICT_NONE,
+                                 nullColumnHack: String? = null, block: (MutableMap<String, Any?>) -> Unit): Long =
         insertWithOnConflict(table, nullColumnHack, hashMapOf<String, Any?>().apply(block).toContentValues(), conflictAlgorithm)
 
 /**

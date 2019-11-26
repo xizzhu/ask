@@ -23,7 +23,7 @@ import kotlin.test.*
 
 class SQLiteDatabaseInsertTest : BaseSQLiteDatabaseTest() {
     @Test
-    fun testInsert() {
+    fun testInsertThenIgnore() {
         assertNotEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = 1L
@@ -32,11 +32,11 @@ class SQLiteDatabaseInsertTest : BaseSQLiteDatabaseTest() {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 2L
         })
-        assertEquals(-1L, database.insert(TABLE_NAME) {
+        assertEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_IGNORE) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = 0L
         })
-        assertEquals(-1L, database.insert(TABLE_NAME) {
+        assertEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_IGNORE) {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 0L
         })
@@ -53,24 +53,24 @@ class SQLiteDatabaseInsertTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
-    fun testInsertOrThrow() {
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
+    fun testInsertThenThrow() {
+        assertNotEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = 1L
         })
-        assertNotEquals(-1L, database.insertOrThrow(TABLE_NAME) {
+        assertNotEquals(-1L, database.insert(TABLE_NAME) {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 2L
         })
 
         assertFailsWith(SQLException::class) {
-            database.insertOrThrow(TABLE_NAME) {
+            database.insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key1"
                 it[COLUMN_VALUE] = 0L
             }
         }
         assertFailsWith(SQLException::class) {
-            database.insertOrThrow(TABLE_NAME) {
+            database.insert(TABLE_NAME) {
                 it[COLUMN_KEY] = "key2"
                 it[COLUMN_VALUE] = 0L
             }
@@ -88,34 +88,21 @@ class SQLiteDatabaseInsertTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
-    fun testInsertWithOnConflict() {
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+    fun testInsertThenReplace() {
+        assertNotEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = 1L
         })
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
+        assertNotEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 2L
         })
 
-        assertFailsWith(SQLException::class) {
-            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-                it[COLUMN_KEY] = "key1"
-                it[COLUMN_VALUE] = 0L
-            }
-        }
-        assertFailsWith(SQLException::class) {
-            database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_NONE) {
-                it[COLUMN_KEY] = "key2"
-                it[COLUMN_VALUE] = 0L
-            }
-        }
-
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
+        assertNotEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
             it[COLUMN_KEY] = "key1"
             it[COLUMN_VALUE] = 3L
         })
-        assertNotEquals(-1L, database.insertWithOnConflict(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
+        assertNotEquals(-1L, database.insert(TABLE_NAME, SQLiteDatabase.CONFLICT_REPLACE) {
             it[COLUMN_KEY] = "key2"
             it[COLUMN_VALUE] = 4L
         })

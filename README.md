@@ -59,19 +59,9 @@ database.dropIndex("indexName")
 ```
 
 ### Insert Values
-To insert a row into a table, use the `insert()`, `insertOrThrow()`, or `insertWithOnConflict()` function:
+To insert a row into a table, use the `insert()` function:
 ```kotlin
 database.insert("tableName") {
-  it["textColumn"] = "random text"
-  it["integerColumn"] = 8964L
-}
-
-database.insertOrThrow("tableName") {
-  it["textColumn"] = "random text"
-  it["integerColumn"] = 8964L
-}
-
-database.insertWithOnConflict("tableName", SQLiteDatabase.CONFLICT_REPLACE) {
   it["textColumn"] = "random text"
   it["integerColumn"] = 8964L
 }
