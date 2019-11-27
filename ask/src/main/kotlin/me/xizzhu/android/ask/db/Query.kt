@@ -27,7 +27,7 @@ enum class SortOrder(internal val text: String) {
 }
 
 class Query(private val db: SQLiteDatabase, private val table: String,
-            private val columns: Array<out String>, private val where: String = "") {
+            private val columns: Array<out String>, private val where: String) {
     private var distinct: Boolean = false
     private var groupBy: Array<out String>? = null
     private var having: Condition? = null
