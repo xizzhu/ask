@@ -1,7 +1,7 @@
 CHANGELOG
 ---------
 
-#### Next release
+#### v0.3.0 (2019-11-27)
 - Changed Condition.NoOp to an object
 
 #### v0.2.0 (2019-11-27)
