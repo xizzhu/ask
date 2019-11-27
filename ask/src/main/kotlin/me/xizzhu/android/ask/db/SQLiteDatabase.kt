@@ -127,7 +127,7 @@ inline fun SQLiteDatabase.insert(table: String, conflictAlgorithm: Int = SQLiteD
  * @return A [Query] object.
  */
 inline fun SQLiteDatabase.select(table: String, vararg columns: String,
-                                 condition: ConditionBuilder.() -> Condition = { Condition.NoOp() }): Query =
+                                 condition: ConditionBuilder.() -> Condition = { noOp() }): Query =
         Query(this, table, columns, buildSqlForWhere(condition(ConditionBuilder)))
 
 /**

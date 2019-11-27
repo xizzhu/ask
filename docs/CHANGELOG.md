@@ -1,6 +1,9 @@
 CHANGELOG
 ---------
 
+#### Next release
+- Changed Condition.NoOp to an object
+
 #### v0.2.0 (2019-11-27)
 - Added helper to get value of corresponding type from map
 - Updated dependencies:

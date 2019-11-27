@@ -17,7 +17,7 @@
 package me.xizzhu.android.ask.db
 
 sealed class Condition(internal val text: String) {
-    class NoOp : Condition("")
+    object NoOp : Condition("")
 
     class IsNull(key: String) : Condition("$key IS NULL")
 
@@ -55,6 +55,8 @@ sealed class Condition(internal val text: String) {
 }
 
 object ConditionBuilder {
+    fun noOp(): Condition.NoOp = Condition.NoOp
+
     fun String.isNull(): Condition.IsNull = Condition.IsNull(this)
 
     fun String.isNotNull(): Condition.IsNotNull = Condition.IsNotNull(this)
