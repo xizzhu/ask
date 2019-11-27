@@ -46,8 +46,6 @@ object Versions {
     }
 
     object AndroidX {
-        const val annotation = "1.1.0"
-
         object Test {
             const val junit = "1.1.1"
             const val rules = "1.2.0"
@@ -77,8 +75,6 @@ object Dependencies {
     }
 
     object AndroidX {
-        const val annotation = "androidx.annotation:annotation:${Versions.AndroidX.annotation}"
-
         object Test {
             const val junit = "androidx.test.ext:junit:${Versions.AndroidX.Test.junit}"
             const val rules = "androidx.test:rules:${Versions.AndroidX.Test.rules}"
