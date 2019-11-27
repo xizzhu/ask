@@ -41,7 +41,7 @@ object Versions {
     val java = JavaVersion.VERSION_1_8
 
     object Kotlin {
-        const val core = "1.3.60"
+        const val core = "1.3.61"
         const val coroutines = "1.3.2"
     }
 
