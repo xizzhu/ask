@@ -2,6 +2,7 @@ CHANGELOG
 ---------
 
 #### Next release
+- Added helper to get value of corresponding type from map
 - Updated dependencies:
   - Kotlin to 1.3.61
 

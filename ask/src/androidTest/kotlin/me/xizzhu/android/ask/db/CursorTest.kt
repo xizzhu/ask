@@ -67,7 +67,7 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
-    fun testGetters() {
+    fun testCursorGetters() {
         prepareDatabase()
 
         database.select(TABLE_NAME).limit(1L).asCursor().use { cursor ->
@@ -85,6 +85,41 @@ class CursorTest : BaseUnitTest() {
             assertEquals(789L, cursor.getLong(COLUMN_INTEGER))
             assertEquals(789, cursor.getShort(COLUMN_INTEGER))
             assertEquals("string", cursor.getString(COLUMN_STRING))
+        }
+    }
+
+    @Test
+    fun testMapGetters() {
+        prepareDatabase()
+
+        database.select(TABLE_NAME).limit(1L).forEach { row ->
+            assertArrayEquals(byteArrayOf(1, 2, 3), row.getBlob(COLUMN_BLOB))
+            assertFailsWith(NoSuchElementException::class) { row.getBlob("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getBlob(COLUMN_FLOAT) }
+
+            assertEquals(4.56, row.getDouble(COLUMN_FLOAT))
+            assertFailsWith(NoSuchElementException::class) { row.getDouble("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getDouble(COLUMN_BLOB) }
+
+            assertEquals(4.56F, row.getFloat(COLUMN_FLOAT))
+            assertFailsWith(NoSuchElementException::class) { row.getFloat("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getFloat(COLUMN_BLOB) }
+
+            assertEquals(789, row.getInt(COLUMN_INTEGER))
+            assertFailsWith(NoSuchElementException::class) { row.getInt("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getInt(COLUMN_BLOB) }
+
+            assertEquals(789L, row.getLong(COLUMN_INTEGER))
+            assertFailsWith(NoSuchElementException::class) { row.getLong("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getLong(COLUMN_BLOB) }
+
+            assertEquals(789, row.getShort(COLUMN_INTEGER))
+            assertFailsWith(NoSuchElementException::class) { row.getShort("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getShort(COLUMN_BLOB) }
+
+            assertEquals("string", row.getString(COLUMN_STRING))
+            assertFailsWith(NoSuchElementException::class) { row.getString("non_exist") }
+            assertFailsWith(NoSuchElementException::class) { row.getString(COLUMN_BLOB) }
         }
     }
 
