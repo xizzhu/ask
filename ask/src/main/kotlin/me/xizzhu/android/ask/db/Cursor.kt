@@ -36,6 +36,34 @@ fun Cursor.getShort(column: String): Short = getShort(getColumnIndexOrThrow(colu
 
 fun Cursor.getString(column: String): String = getString(getColumnIndexOrThrow(column))
 
+fun Map<String, Any?>.getBlob(key: String): ByteArray = get(key).let { value ->
+    if (value is ByteArray) value else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getDouble(key: String): Double = get(key).let { value ->
+    if (value is Double) value else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getFloat(key: String): Float = get(key).let { value ->
+    if (value is Double) value.toFloat() else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getInt(key: String): Int = get(key).let { value ->
+    if (value is Long) value.toInt() else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getLong(key: String): Long = get(key).let { value ->
+    if (value is Long) value else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getShort(key: String): Short = get(key).let { value ->
+    if (value is Long) value.toShort() else throw NoSuchElementException("No element for '$key'")
+}
+
+fun Map<String, Any?>.getString(key: String): String = get(key).let { value ->
+    if (value is String) value else throw NoSuchElementException("No element for '$key'")
+}
+
 /**
  * Create a [Iterable] that returns all the data from the [Cursor].
  *
