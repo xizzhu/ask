@@ -105,7 +105,20 @@ query.groupBy("integerColumn")
   .having { max("integerColumn") greater 1L }
 ```
 
-Note that the query is not executed, until `asCursor()` or one of the extension functions is called. More info can be found [here](ask/src/main/kotlin/me/xizzhu/android/ask/db/Query.kt).
+Note that the query is not executed, until `asCursor()` or one of the extension functions is called, e.g.:
+```kotlin
+// return a list of Pair<Integer, String>
+query.toList { row ->
+  row.getInt("integerColumn") to row.getString("textColumn")
+}
+
+// return the Integer value of integerColumn in the first row
+query.first { row ->
+  row.getInt("integerColumn")
+}
+```
+
+More about `Query` can be found [here](ask/src/main/kotlin/me/xizzhu/android/ask/db/Query.kt).
 
 ### Run a Transaction
 * To run a transaction, use the `transaction()` function:
