@@ -73,7 +73,6 @@ dependencies {
     implementation(Dependencies.Kotlin.coroutinesAndroid)
 
     implementation(Dependencies.AndroidX.annotation)
-    implementation(Dependencies.AndroidX.fragment)
 
     androidTestImplementation(Dependencies.Kotlin.test)
     androidTestImplementation(Dependencies.Kotlin.coroutinesTest)
