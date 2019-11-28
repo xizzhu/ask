@@ -540,6 +540,22 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testToListIndexed() {
+        assertTrue(database.select(TABLE_NAME).toListIndexed { _, _ -> fail() }.isEmpty())
+
+        populateDatabase()
+
+        assertListEquals(
+                listOf(
+                        0 to 1L,
+                        1 to 2L,
+                        2 to 3L
+                ),
+                database.select(TABLE_NAME).toListIndexed { index, row -> index to (row[COLUMN_VALUE] as Long) }
+        )
+    }
+
+    @Test
     fun testFirst() {
         assertFailsWith(SQLiteException::class) { database.select(TABLE_NAME).first() }
 

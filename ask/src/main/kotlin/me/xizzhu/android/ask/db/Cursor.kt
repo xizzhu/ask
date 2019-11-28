@@ -160,6 +160,16 @@ inline fun <T> Cursor.toList(converter: (Map<String, Any?>) -> T): List<T> = use
 }
 
 /**
+ * Create a [List] of items created from each row of the [Cursor] using [converter], and close the cursor.
+ */
+inline fun <T> Cursor.toListIndexed(converter: (Int, Map<String, Any?>) -> T): List<T> = use {
+    ArrayList<T>(count).apply {
+        var index = 0
+        while (moveToNext()) add(converter(index++, getRow()))
+    }
+}
+
+/**
  * Create a [Map] that contains data of first item from the [Cursor], and close the cursor.
  *
  * The key is the column name, and the value is the value of the column.
