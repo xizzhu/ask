@@ -241,6 +241,19 @@ class CursorTest : BaseUnitTest() {
     }
 
     @Test
+    fun testToListIndexed() {
+        prepareDatabase()
+
+        assertListEquals(
+                listOf(
+                        0 to 789L,
+                        1 to null
+                ),
+                queryAll().toListIndexed { index, row -> index to (row[COLUMN_INTEGER] as Long?) }
+        )
+    }
+
+    @Test
     fun testFirst() {
         assertFailsWith(CursorIndexOutOfBoundsException::class) { queryAll().first() }
 

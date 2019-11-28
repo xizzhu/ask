@@ -113,6 +113,11 @@ fun Query.toList(): List<Map<String, Any?>> = asCursor().toList()
 inline fun <T> Query.toList(converter: (Map<String, Any?>) -> T): List<T> = asCursor().toList(converter)
 
 /**
+ * Execute the query and return a [List] of items created from each row of the query using [converter].
+ */
+inline fun <T> Query.toListIndexed(converter: (Int, Map<String, Any?>) -> T): List<T> = asCursor().toListIndexed(converter)
+
+/**
  * Execute the query and return first row from the query.
  *
  * @throws [SQLiteException]

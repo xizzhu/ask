@@ -1,6 +1,9 @@
 CHANGELOG
 ---------
 
+#### Next Release
+- Added Cursor.toListIndexed() and Query.toListIndexed()
+
 #### v0.3.0 (2019-11-27)
 - Changed Condition.NoOp to an object
 
