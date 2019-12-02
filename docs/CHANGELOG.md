@@ -1,6 +1,9 @@
 CHANGELOG
 ---------
 
+#### Next Release
+- Added Query.count()
+
 #### v0.4.0 (2019-11-27)
 - Added Cursor.toListIndexed() and Query.toListIndexed()
 

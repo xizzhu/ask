@@ -482,6 +482,17 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testCount() {
+        assertEquals(0L, database.select(TABLE_NAME).count())
+
+        populateDatabase()
+
+        assertEquals(3L, database.select(TABLE_NAME).count())
+        assertEquals(1L, database.select(TABLE_NAME) { COLUMN_KEY eq "key1" }.count())
+        assertEquals(2L, database.select(TABLE_NAME) { COLUMN_VALUE inList listOf(1L, 3L, 5L) }.count())
+    }
+
+    @Test
     fun testForEach() {
         database.select(TABLE_NAME).forEach { fail() }
 

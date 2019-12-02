@@ -90,6 +90,15 @@ class Query(private val db: SQLiteDatabase, private val table: String,
             append(if (limit < 0) Long.MAX_VALUE else limit)
         }.toString()
     }
+
+    /**
+     * Execute the query and return the number of rows from the query.
+     */
+    fun count(): Long = db.query(table, arrayOf("COUNT(*)"), where, null,
+            null, null, null, null).use {
+        it.moveToFirst()
+        it.getLong(0)
+    }
 }
 
 /**
