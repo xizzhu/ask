@@ -23,9 +23,9 @@ sealed class Condition(internal val text: String) {
 
     class IsNotNull(key: String) : Condition("$key IS NOT NULL")
 
-    class Equal<T>(key: String, value: T) : Condition("$key = '${value.toString()}'")
+    class Equal<T>(key: String, value: T) : Condition("$key = '${value.toString().escape()}'")
 
-    class NotEqual<T>(key: String, value: T) : Condition("$key != '${value.toString()}'")
+    class NotEqual<T>(key: String, value: T) : Condition("$key != '${value.toString().escape()}'")
 
     class Less<T>(key: String, value: T) : Condition("$key < ${value.toString()}")
 
@@ -37,15 +37,15 @@ sealed class Condition(internal val text: String) {
 
     class Between<T>(key: String, from: T, to: T) : Condition("$key BETWEEN ${from.toString()} AND ${to.toString()}")
 
-    class Like(key: String, pattern: String) : Condition("$key LIKE '$pattern'")
+    class Like(key: String, pattern: String) : Condition("$key LIKE '${pattern.escape()}'")
 
-    class NotLike(key: String, pattern: String) : Condition("$key NOT LIKE '$pattern'")
+    class NotLike(key: String, pattern: String) : Condition("$key NOT LIKE '${pattern.escape()}'")
 
-    class Glob(key: String, pattern: String) : Condition("$key GLOB '$pattern'")
+    class Glob(key: String, pattern: String) : Condition("$key GLOB '${pattern.escape()}'")
 
-    class InList<T>(key: String, values: Iterable<T>) : Condition("$key IN (${values.joinToString(prefix = "'", postfix = "'", separator = "', '")})")
+    class InList<T>(key: String, values: Iterable<T>) : Condition("$key IN (${values.toSqlInExpression()})")
 
-    class NotInList<T>(key: String, values: Iterable<T>) : Condition("$key NOT IN (${values.joinToString(prefix = "'", postfix = "'", separator = "', '")})")
+    class NotInList<T>(key: String, values: Iterable<T>) : Condition("$key NOT IN (${values.toSqlInExpression()})")
 
     class And(exp1: Condition, exp2: Condition) : Condition("${exp1.text} AND ${exp2.text}")
 

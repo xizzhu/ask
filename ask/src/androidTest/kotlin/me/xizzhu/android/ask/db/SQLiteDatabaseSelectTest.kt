@@ -282,6 +282,75 @@ class SQLiteDatabaseSelectTest : BaseSQLiteDatabaseTest() {
     }
 
     @Test
+    fun testSelectWhereEscape() {
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key'1"
+            it[COLUMN_VALUE] = 1L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key''2"
+            it[COLUMN_VALUE] = 2L
+        }
+        database.insert(TABLE_NAME) {
+            it[COLUMN_KEY] = "key'''3"
+            it[COLUMN_VALUE] = 3L
+        }
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY eq "key'1" }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key''2", COLUMN_VALUE to 2L),
+                        mapOf(COLUMN_KEY to "key'''3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY neq "key'1" }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'''3", COLUMN_VALUE to 3L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY like "key'''%%" }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'1", COLUMN_VALUE to 1L),
+                        mapOf(COLUMN_KEY to "key''2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY notLike "key'''%%" }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'''3", COLUMN_VALUE to 3L),
+                        mapOf(COLUMN_KEY to "key''2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY glob "key''*" }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'''3", COLUMN_VALUE to 3L),
+                        mapOf(COLUMN_KEY to "key''2", COLUMN_VALUE to 2L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY inList listOf("key''2", "key'''3") }.toList()
+        )
+
+        assertListEquals(
+                listOf(
+                        mapOf(COLUMN_KEY to "key'1", COLUMN_VALUE to 1L)
+                ),
+                database.select(TABLE_NAME) { COLUMN_KEY notInList listOf("key''2", "key'''3") }.toList()
+        )
+    }
+
+    @Test
     fun testSelectWithColumns() {
         populateDatabase()
 
