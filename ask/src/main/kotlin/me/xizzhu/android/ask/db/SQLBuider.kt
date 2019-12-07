@@ -103,3 +103,11 @@ fun buildSqlForCreatingIndex(index: String, table: String, columns: Array<out St
  */
 fun buildSqlForWhere(condition: Condition): String = condition.text
 
+// A string constant is formed by enclosing the string in single quotes ('). A single quote within
+// the string can be encoded by putting two single quotes in a row - as in Pascal. C-style escapes
+// using the backslash character are not supported because they are not standard SQL.
+// Ref. https://www.sqlite.org/lang_expr.html
+internal fun String.escape(): String = replace("'", "''")
+
+internal fun <T> Iterable<T>.toSqlInExpression(): String =
+        joinToString(prefix = "'", postfix = "'", separator = "', '", transform = { it.toString().escape() })

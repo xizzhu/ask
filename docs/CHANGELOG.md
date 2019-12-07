@@ -3,6 +3,7 @@ CHANGELOG
 
 #### Next Release
 - Added Query.count()
+- Should escape single quote in string constants
 - Updated dependencies:
   - Android Gradle plugin to 3.5.3
 
