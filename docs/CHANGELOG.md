@@ -1,7 +1,7 @@
 CHANGELOG
 ---------
 
-#### Next Release
+#### v0.5.0 (2019-12-07)
 - Added Query.count()
 - Should escape single quote in string constants
 - Updated dependencies:
