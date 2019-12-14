@@ -1,7 +1,7 @@
 CHANGELOG
 ---------
 
-#### Next Release
+#### v0.5.1 (2019-12-13)
 - Updated dependencies:
   - Kotlin Coroutine to 1.3.3
 
