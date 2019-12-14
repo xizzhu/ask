@@ -1,6 +1,10 @@
 CHANGELOG
 ---------
 
+#### Next Release
+- Updated dependencies:
+  - Kotlin Coroutine to 1.3.3
+
 #### v0.5.0 (2019-12-07)
 - Added Query.count()
 - Should escape single quote in string constants
