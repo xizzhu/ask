@@ -1,6 +1,13 @@
 CHANGELOG
 ---------
 
+#### Next Release
+- Updated dependencies:
+  - Gradle to 6.2.2
+  - Android Gradle Plugin to 3.6.1
+  - Android Build Tool to 29.0.3
+  - Kotlin to 1.3.70, Coroutine to 1.3.4
+
 #### v0.5.1 (2019-12-13)
 - Updated dependencies:
   - Kotlin Coroutine to 1.3.3
