@@ -1,7 +1,7 @@
 CHANGELOG
 ---------
 
-#### Next Release
+#### v0.5.2 (2020-03-06)
 - Updated dependencies:
   - Gradle to 6.2.2
   - Android Gradle Plugin to 3.6.1
